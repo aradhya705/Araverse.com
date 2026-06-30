@@ -407,32 +407,50 @@ button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-siz
   </div>
 </div>
 
-<!-- FIREBASE: free real-time database so data is shared across every visitor/device.
-     Replace the placeholder values below with YOUR OWN free Firebase project config
-     (Firebase Console → Project Settings → Your apps → SDK setup). Takes ~3 minutes:
-     1) firebase.google.com → Create project (free)
-     2) Build → Realtime Database → Create Database → start in "test mode"
-     3) Project settings → copy the firebaseConfig object → paste below -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
 <script>
-const FIREBASE_CONFIG={
-  apiKey:"REPLACE_ME",
-  authDomain:"REPLACE_ME.firebaseapp.com",
-  databaseURL:"https://REPLACE_ME-default-rtdb.firebaseio.com",
-  projectId:"REPLACE_ME",
-  storageBucket:"REPLACE_ME.appspot.com",
-  messagingSenderId:"REPLACE_ME",
-  appId:"REPLACE_ME"
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD0IiM3-CyZtwGJhlEUzJ8W-gDGcVYAku8",
+  authDomain: "araverse-5d9ac.firebaseapp.com",
+  databaseURL: "https://araverse-5d9ac-default-rtdb.firebaseio.com",
+  projectId: "araverse-5d9ac",
+  storageBucket: "araverse-5d9ac.firebasestorage.app",
+  messagingSenderId: "254501202567",
+  appId: "1:254501202567:web:6410f92f40720a6925e622",
+  measurementId: "G-3MRP0ET4N7"
 };
-let fbDB=null;
+
+let fbDB = null;
+
 try{
-  if(FIREBASE_CONFIG.apiKey!=="REPLACE_ME"){
+
     firebase.initializeApp(FIREBASE_CONFIG);
-    fbDB=firebase.database();
-  }
-}catch(e){console.warn('Firebase not configured, falling back to local-only storage',e);}
+
+    fbDB = firebase.database();
+
+    console.log("Firebase connected:", fbDB);
+
+    fbDB.ref("test").set({
+        message:"AraVerse connected successfully",
+        time: Date.now()
+    })
+    .then(()=>{
+        console.log("Data written");
+    })
+    .catch(err=>{
+        console.error("Write failed:", err);
+    });
+
+}catch(e){
+
+    console.error("Firebase initialization error:",e);
+
+}
 </script>
+
 <script>
 const OWNER_USERNAME='aradhya09',OWNER_PASSWORD='aradhyasrivastava09';
 const HAS_SHARED_STORAGE=(typeof window!=='undefined'&&!!window.storage);
@@ -440,15 +458,49 @@ const HAS_FIREBASE=!!fbDB;
 let DB={users:{},posts:[],ngls:[],ownerNGLs:[],stories:[],loginNotifs:[],dms:{},notifications:{},newSignupAlerts:[]};
 let currentUser=null,isOwner=false,currentDMWith=null,storyTimer=null,currentStoryId=null;
 let suppressNextFbEcho=false;
-
 function saveDB(){
-  try{localStorage.setItem('araverse_db',JSON.stringify(DB))}catch(e){}
-  if(HAS_FIREBASE){
-    suppressNextFbEcho=true;
-    try{fbDB.ref('araverse_db').set(DB).catch(()=>{})}catch(e){}
-  }else if(HAS_SHARED_STORAGE){
-    try{window.storage.set('araverse_db',JSON.stringify(DB),true).catch(()=>{})}catch(e){}
-  }
+
+    try{
+
+        // Save locally
+        localStorage.setItem(
+            'araverse_db',
+            JSON.stringify(DB)
+        );
+
+        // Save to Firebase
+        if(HAS_FIREBASE && fbDB){
+
+            suppressNextFbEcho=true;
+
+            fbDB.ref('araverse_db')
+            .set(DB)
+            .then(()=>{
+                console.log("Database synced");
+            })
+            .catch(err=>{
+                console.log("Firebase save error:",err);
+            });
+
+        }
+
+        // Shared storage backup
+        else if(HAS_SHARED_STORAGE){
+
+            window.storage.set(
+                'araverse_db',
+                JSON.stringify(DB),
+                true
+            ).catch(()=>{});
+
+        }
+
+    }catch(e){
+
+        console.log("saveDB error:",e);
+
+    }
+
 }
 async function loadDB(){
   if(HAS_FIREBASE){
