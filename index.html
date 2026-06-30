@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AraVerse ✦</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#e8e8ff;min-height:100vh;overflow-x:hidden}
+:root{--purple:#7c3aed;--purple2:#a855f7;--pink:#ec4899;--dark:#0a0a1a;--card:#131328;--card2:#1a1a35;--border:#2a2a4a;--text:#e8e8ff;--muted:#8888aa}
+.hide{display:none!important}
+input,textarea,select{background:#1a1a35;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 14px;font-size:14px;width:100%;outline:none;font-family:inherit}
+input:focus,textarea:focus{border-color:var(--purple)}
+button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-size:14px;padding:10px 18px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;font-weight:600}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--purple);background:#1a1a35}
+.btn-sm{padding:6px 12px;font-size:12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.av28{width:28px;height:28px;font-size:11px}.av32{width:32px;height:32px;font-size:13px}.av44{width:44px;height:44px;font-size:16px}.av80{width:80px;height:80px;font-size:28px}
+.flex{display:flex}.gap4{gap:4px}.gap8{gap:8px}.gap10{gap:10px}.gap12{gap:12px}
+.ai-center{align-items:center}.jc-between{justify-content:space-between}.col{flex-direction:column}
+.mb4{margin-bottom:4px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
+.text-center{text-align:center}.bold{font-weight:700}.muted{color:var(--muted)}.small{font-size:13px}
+.gradient-text{background:linear-gradient(135deg,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#app{max-width:900px;margin:0 auto;padding:0 0 80px;width:100%}
+@media (min-width:700px){
+  #app{max-width:640px}
+  .post-media{max-height:560px}
+}
+@media (min-width:1000px){
+  #app{max-width:720px}
+  .post-media{max-height:640px}
+}
+@media (max-width:480px){
+  #app{padding:0 0 76px}
+  .post-card{border-radius:0;border-left:none;border-right:none;margin-bottom:8px}
+  .post-media{max-height:70vh}
+}
+/* AUTH */
+#auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:30px}
+.auth-logo{font-size:42px;font-weight:900;text-align:center;letter-spacing:-1px}
+.auth-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;width:100%;max-width:380px}
+.auth-tabs{display:flex;margin-bottom:24px;background:#0a0a1a;border-radius:10px;padding:4px}
+.auth-tab{flex:1;padding:9px;border-radius:7px;background:none;border:none;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.auth-tab.active{background:var(--purple);color:#fff}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+/* TOP NAV */
+#top-nav{background:rgba(10,10,26,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{font-size:20px;font-weight:900}
+/* BOTTOM NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,26,.95);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 10px;z-index:100}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;border-radius:10px;cursor:pointer;transition:.2s;color:var(--muted);font-size:10px;font-weight:600;border:none;background:none;position:relative}
+.bnav-item.active{color:#a855f7}
+.bnav-item i{font-size:20px}
+.bnav-badge{position:absolute;top:0;right:0;background:#ec4899;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:10px;min-width:14px;text-align:center}
+/* STORY BAR */
+#story-bar{display:flex;gap:14px;padding:14px 16px;overflow-x:auto;scrollbar-width:none}
+#story-bar::-webkit-scrollbar{display:none}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0}
+.story-ring{padding:3px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#ec4899)}
+.story-ring.seen{background:var(--border)}
+.story-inner{background:var(--dark);border-radius:50%;padding:2px}
+.story-name{font-size:11px;color:var(--muted);max-width:60px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* POSTS */
+.post-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.post-header{display:flex;align-items:center;gap:10px;padding:14px 14px 0}
+.post-username{font-weight:700;font-size:14px;cursor:pointer}
+.post-username:hover{color:#a855f7}
+.post-time{font-size:12px;color:var(--muted)}
+.post-body{padding:12px 14px;font-size:15px;line-height:1.5}
+.post-ngl{background:linear-gradient(135deg,#1a0a3a,#0a1a3a);border-left:3px solid #a855f7;margin:0 14px 12px;border-radius:8px;padding:12px}
+.post-ngl .q{font-size:13px;color:#c084fc;font-weight:600;margin-bottom:4px}
+.post-actions{display:flex;gap:0;border-top:1px solid var(--border)}
+.post-action{flex:1;padding:10px;background:none;border:none;border-right:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.post-action:last-child{border-right:none}
+.post-action:hover{background:#1a1a35;color:var(--text)}
+.post-action.liked{color:#ec4899}
+.post-media{width:100%;max-height:480px;min-height:220px;object-fit:cover;display:block;background:#000}
+.post-media-wrap{position:relative;background:#000}
+.post-type-badge{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}
+
+/* NGL QUESTION INBOX on post (visible only to post owner) */
+.ngl-inbox-banner{background:linear-gradient(135deg,#1a0535,#0a1a35);border-top:1px solid #3a1a5a;padding:14px 16px}
+.ngl-inbox-banner .inbox-label{font-size:11px;font-weight:700;color:#c084fc;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ngl-inbox-item{background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);border-radius:10px;padding:12px;margin-bottom:8px}
+.ngl-inbox-item:last-child{margin-bottom:0}
+.ngl-inbox-q{font-size:14px;line-height:1.5;margin-bottom:8px}
+.ngl-inbox-meta{font-size:11px;color:var(--muted);margin-bottom:8px}
+.ngl-inbox-reply{display:flex;gap:8px;margin-top:6px}
+.ngl-inbox-reply input{flex:1;font-size:13px;padding:8px 12px}
+.ngl-inbox-reply button{white-space:nowrap;padding:8px 14px;font-size:12px}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:flex;align-items:flex-end;justify-content:center}
+.modal-box{background:var(--card);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:16px}
+.modal-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;float:right;margin-top:-4px;padding:0}
+/* NGL */
+.ngl-link-box{background:#0d0d22;border:1px dashed #a855f7;border-radius:10px;padding:12px 16px;font-size:12px;color:#c084fc;word-break:break-all;cursor:pointer;text-align:center;margin-bottom:4px}
+.ngl-q-item{background:var(--card2);border-radius:10px;padding:12px;margin-bottom:10px}
+/* PROFILE */
+.profile-banner{height:120px;background:linear-gradient(135deg,#1a0a3a,#0a1535);border-radius:14px 14px 0 0;position:relative}
+.profile-av-wrap{position:absolute;bottom:-36px;left:18px}
+.profile-stats{display:flex;gap:24px;padding:52px 18px 16px}
+.stat-num{font-size:20px;font-weight:700}
+.stat-label{font-size:12px;color:var(--muted)}
+/* GAMES */
+.game-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px}
+.game-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.truth-dare-card{background:var(--card2);border-radius:12px;padding:16px;text-align:center;margin:12px 0;min-height:80px;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1.5}
+.game-btns{display:flex;gap:10px;margin-top:12px}
+.game-btns button{flex:1}
+.score-board{display:flex;gap:12px;margin-bottom:12px}
+.score-item{flex:1;background:var(--card2);border-radius:10px;padding:12px;text-align:center}
+.score-num{font-size:26px;font-weight:700}
+.score-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+.goal-field{position:relative;width:100%;height:100px;background:linear-gradient(180deg,#0a1a0a,#0d200d);border-radius:10px;overflow:hidden;cursor:crosshair}
+.goal-post{position:absolute;top:0;left:50%;transform:translateX(-50%);width:60%;height:100%;border:3px solid #22c55e;border-top:none;opacity:.5}
+/* OWNER */
+.owner-badge{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.owner-header{background:linear-gradient(135deg,#1a0a3a,#0a1535);border-radius:14px;padding:20px;margin-bottom:16px;border:1px solid #3a1a5a}
+/* STORY VIEWER */
+.story-viewer{position:fixed;inset:0;background:#000;z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.story-progress{display:flex;gap:4px;position:absolute;top:14px;left:12px;right:12px}
+.story-prog-bar{flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden}
+.story-prog-fill{height:100%;background:#fff;animation:storyProg 5s linear forwards}
+@keyframes storyProg{from{width:0}to{width:100%}}
+.story-content{width:100%;max-width:400px;text-align:center;padding:20px;position:relative;z-index:2}
+.story-bg{position:absolute;inset:0}
+/* TOAST */
+#toast{position:fixed;top:20px;right:20px;background:var(--purple);color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;max-width:280px}
+#toast.show{opacity:1}
+.user-search-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer;transition:.2s}
+.user-search-item:hover{background:#1a1a35}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.pill-green{background:#0a2a0a;color:#4ade80}.pill-purple{background:#1a0a3a;color:#c084fc}.pill-pink{background:#2a0a1a;color:#f472b6}
+/* MESSAGING */
+.chat-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0}
+.chat-messages{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.chat-input-wrap{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);background:var(--card);flex-shrink:0}
+.chat-bubble{max-width:75%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.4;word-break:break-word}
+.bubble-me{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.bubble-them{background:var(--card2);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.dm-item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;cursor:pointer;transition:.2s}
+.dm-item:hover,.dm-item.active{background:var(--card2)}
+/* PROFILE TABS */
+.ptab{flex:1;padding:12px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer}
+/* NGL PUBLIC */
+#ngl-public-screen{min-height:100vh;display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:20px}
+#ngl-public-screen.show{display:flex}
+.ngl-pub-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:420px}
+.follow-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;background:var(--card2);margin-bottom:6px}
+.comment-item{display:flex;gap:8px;padding:8px;border-radius:8px;background:var(--card2);margin-bottom:6px}
+.compose-tabs{display:flex;background:#0a0a1a;border-radius:10px;padding:4px;margin-bottom:16px}
+.compose-tab{flex:1;padding:8px;border-radius:7px;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.compose-tab.active{background:var(--purple);color:#fff}
+
+/* POST BUTTON — bigger, more prominent */
+.post-btn-big{
+  background:linear-gradient(135deg,#7c3aed,#ec4899);
+  color:#fff;font-weight:700;font-size:15px;
+  padding:10px 22px;border-radius:12px;
+  box-shadow:0 4px 18px rgba(124,58,237,.35);
+  letter-spacing:.2px;
+}
+.post-btn-big:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,58,237,.5)}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- NGL PUBLIC PAGE -->
+<div id="ngl-public-screen">
+  <div class="auth-logo gradient-text">AraVerse ✦</div>
+  <p style="color:var(--muted);font-size:14px;text-align:center;margin-top:-20px">Your universe. Your vibe.</p>
+  <div class="ngl-pub-card">
+    <div class="flex ai-center gap10 mb16">
+      <div id="ngl-pub-av" class="avatar av44" style="background:#7c3aed">?</div>
+      <div>
+        <div style="font-weight:700;font-size:16px" id="ngl-pub-name">Loading...</div>
+        <div class="muted small">Ask anonymously 👀 They won't know it's you!</div>
+      </div>
+    </div>
+    <textarea id="ngl-pub-input" rows="4" placeholder="Ask something... 🤫" style="margin-bottom:12px;resize:none"></textarea>
+    <button class="btn-primary" style="width:100%;margin-bottom:12px" onclick="submitPublicNGL()">Send Anonymously 💬</button>
+    <div style="text-align:center"><a href="#" onclick="showAppFromNGL(event)" style="color:#a855f7;font-size:13px;text-decoration:none">Join AraVerse ✦</a></div>
+  </div>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-logo gradient-text">AraVerse ✦</div>
+  <p style="color:var(--muted);font-size:14px;text-align:center;margin-top:-20px">Your universe. Your vibe.</p>
+  <div class="auth-box">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <div id="login-form">
+      <div class="form-group"><label class="form-label">Username</label><input id="login-user" type="text" placeholder="your_username" /></div>
+      <div class="form-group"><label class="form-label">Password</label><input id="login-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+      <button class="btn-primary" style="width:100%;margin-top:8px" onclick="doLogin()">Sign In</button>
+    </div>
+    <div id="signup-form" class="hide">
+      <div class="form-group"><label class="form-label">Username</label><input id="su-user" type="text" placeholder="cool_username" /></div>
+      <div class="form-group"><label class="form-label">Password</label><input id="su-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSignup()" /></div>
+      <button class="btn-primary" style="width:100%;margin-top:8px" onclick="doSignup()">Create Account</button>
+    </div>
+  </div>
+  <div style="color:var(--muted);font-size:12px;text-align:center">Owner: <a href="#" onclick="ownerLoginPrompt(event)" style="color:#a855f7;text-decoration:none">Private Login ✦</a></div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" class="hide">
+  <div id="top-nav">
+    <div class="nav-logo gradient-text">AraVerse ✦</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="nav-av" class="avatar av32" style="background:var(--purple);cursor:pointer" onclick="goPage('profile')"></div>
+      <button class="btn-ghost btn-sm" onclick="doLogout()" style="padding:8px 10px"><i class="ti ti-logout" style="font-size:18px"></i></button>
+    </div>
+  </div>
+  <div id="app">
+    <!-- HOME -->
+    <div id="page-home">
+      <div id="story-bar"></div>
+      <div style="padding:0 12px 10px">
+        <div class="card" style="background:linear-gradient(135deg,#1a0a3a,#0a1535);border-color:#3a1a5a">
+          <div class="flex ai-center gap8 mb12"><span style="font-size:22px">💬</span><div><div style="font-weight:700;font-size:14px">Ask Ara Anything</div><div class="muted small">Send an anonymous question to Aradhya</div></div></div>
+          <textarea id="owner-ngl-input" rows="2" placeholder="Ask anonymously... Ara won't know it's you 👀" style="margin-bottom:10px;resize:none"></textarea>
+          <button class="btn-primary" style="width:100%" onclick="sendOwnerNGL()">Send Anonymously 💬</button>
+        </div>
+      </div>
+      <div style="padding:0 12px 10px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:700;font-size:15px">Feed</span>
+        <button class="post-btn-big" onclick="openPostCompose()">✦ New Post</button>
+      </div>
+      <div id="home-posts" style="padding:0 12px"></div>
+    </div>
+    <!-- EXPLORE -->
+    <div id="page-explore" class="hide" style="padding:12px">
+      <input id="search-input" type="text" placeholder="Search users..." oninput="searchUsers(this.value)" style="margin-bottom:14px" />
+      <div id="search-results" class="mb16"></div>
+      <div style="font-weight:700;margin-bottom:10px">Trending Posts</div>
+      <div id="explore-posts"></div>
+    </div>
+    <!-- NGL -->
+    <div id="page-ngl" class="hide" style="padding:12px">
+      <div class="card mb16">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px">Your NGL Link 🔗</div>
+        <div class="muted small mb12">Share this link — anyone who opens it can ask you anonymously!</div>
+        <div class="ngl-link-box" id="my-ngl-link" onclick="copyNGLLink()">Tap to copy your link</div>
+        <div class="muted small mb8" style="text-align:center">⬆ This link actually works! Share it on WhatsApp, Instagram, anywhere.</div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button class="btn-primary" style="flex:1" onclick="postNGLToFeed()">📤 Post to Feed</button>
+          <button class="btn-ghost" style="flex:1" onclick="copyNGLLink()">📋 Copy</button>
+          <button class="btn-ghost" style="flex:1" onclick="shareToStory()">✨ To Story</button>
+        </div>
+      </div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:10px">Anonymous Questions for You</div>
+      <div id="ngl-questions"></div>
+    </div>
+    <!-- MESSAGES -->
+    <div id="page-messages" class="hide">
+      <div id="dm-list-view" style="padding:12px">
+        <div style="font-weight:700;font-size:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">Messages <button class="btn-primary btn-sm" onclick="openNewDM()">+ New</button></div>
+        <div id="dm-conversations"></div>
+      </div>
+      <div id="dm-chat-view" class="hide" style="display:flex;flex-direction:column;height:calc(100vh - 136px)">
+        <div class="chat-header">
+          <button onclick="closeDMChat()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:2px 6px">‹</button>
+          <div id="chat-with-av" class="avatar av32" style="background:#7c3aed"></div>
+          <div style="flex:1"><div id="chat-with-name" style="font-weight:700;font-size:14px"></div><div class="muted small">AraVerse DM</div></div>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-wrap">
+          <input id="chat-input" type="text" placeholder="Message..." onkeydown="if(event.key==='Enter')sendDM()" style="flex:1" />
+          <button class="btn-primary btn-sm" onclick="sendDM()" style="flex-shrink:0">Send</button>
+        </div>
+      </div>
+    </div>
+    <!-- NOTIFICATIONS -->
+    <div id="page-notifications" class="hide" style="padding:12px">
+      <div style="font-weight:700;font-size:16px;margin-bottom:12px">Notifications</div>
+      <div id="notifications-list"></div>
+    </div>
+    <!-- PROFILE -->
+    <div id="page-profile" class="hide">
+      <div class="profile-banner"></div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:0 0 14px 14px">
+        <div class="profile-av-wrap"><div id="prof-av" class="avatar av80" style="background:var(--purple);border:4px solid var(--card)"></div></div>
+        <div class="profile-stats">
+          <div style="cursor:pointer" onclick="showFollowModal('posts')"><div class="stat-num" id="prof-posts">0</div><div class="stat-label">Posts</div></div>
+          <div style="cursor:pointer" onclick="showFollowModal('followers')"><div class="stat-num" id="prof-followers">0</div><div class="stat-label">Followers</div></div>
+          <div style="cursor:pointer" onclick="showFollowModal('following')"><div class="stat-num" id="prof-following">0</div><div class="stat-label">Following</div></div>
+        </div>
+        <div style="padding:0 18px 4px"><div style="font-size:18px;font-weight:700" id="prof-name"></div><div class="muted small" id="prof-email" style="margin-top:2px"></div></div>
+        <div style="padding:12px 18px 16px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="post-btn-big" onclick="openPostCompose()">✦ New Post</button>
+          <button class="btn-ghost btn-sm" onclick="openAddStory()">+ Story</button>
+          <button class="btn-ghost btn-sm" onclick="goPage('ngl')">NGL Link</button>
+          <button class="btn-ghost btn-sm" style="position:relative" onclick="openFollowRequests()">Follow Requests<span id="prof-req-badge" class="bnav-badge hide" style="position:absolute;top:-6px;right:-6px"></span></button>
+          <button class="btn-ghost btn-sm" id="prof-privacy-btn" onclick="togglePrivacy()">🌐 Public</button>
+        </div>
+      </div>
+      <div style="display:flex;border-bottom:1px solid var(--border);margin:0 12px">
+        <button class="ptab" id="ptab-posts" style="border-bottom-color:#a855f7;color:var(--text)" onclick="switchProfileTab('posts')">Posts</button>
+        <button class="ptab" id="ptab-reels" onclick="switchProfileTab('reels')">Reels</button>
+        <button class="ptab" id="ptab-photos" onclick="switchProfileTab('photos')">Photos</button>
+      </div>
+      <div style="padding:12px"><div id="my-posts"></div></div>
+    </div>
+    <!-- OWNER DASHBOARD -->
+    <div id="page-owner" class="hide" style="padding:12px">
+      <div class="owner-header">
+        <div class="flex ai-center gap8 mb8"><div class="gradient-text" style="font-size:22px;font-weight:900">👑 Aradhya's Dashboard</div><div class="owner-badge">PRIVATE</div></div>
+        <div class="muted small">Only you can see this.</div>
+      </div>
+      <div class="score-board mb16">
+        <div class="score-item"><div class="score-num" id="ow-users">0</div><div class="score-lbl">Users</div></div>
+        <div class="score-item"><div class="score-num" id="ow-msgs">0</div><div class="score-lbl">NGL Msgs</div></div>
+        <div class="score-item"><div class="score-num" id="ow-posts">0</div><div class="score-lbl">Posts</div></div>
+      </div>
+      <div style="font-weight:700;margin-bottom:10px;font-size:15px">🔔 User Activity</div>
+      <div id="ow-logins" class="mb20"></div>
+      <div style="font-weight:700;margin-bottom:10px;font-size:15px">💬 Anonymous Messages to You</div>
+      <div class="muted small mb12" style="background:#1a0a3a;border-radius:8px;padding:10px;border:1px solid #3a1a5a">👁 You can see who sent each message. Sender does NOT know.</div>
+      <div id="ow-ngls"></div>
+      <div style="font-weight:700;margin-bottom:10px;font-size:15px;margin-top:8px">👥 All Users</div>
+      <div id="ow-users-list"></div>
+    </div>
+  </div>
+  <div id="bottom-nav"></div>
+</div>
+
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay hide" onclick="if(event.target===this)closeModal()">
+  <div id="modal-content" class="modal-box"></div>
+</div>
+
+<!-- STORY VIEWER -->
+<div id="story-viewer" class="story-viewer hide">
+  <div class="story-bg" id="sv-bg"></div>
+  <div class="story-progress" id="story-progress"></div>
+  <button onclick="closeStory()" style="position:absolute;top:20px;right:16px;background:rgba(0,0,0,.5);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;z-index:3">×</button>
+  <div style="position:absolute;top:26px;left:16px;display:flex;align-items:center;gap:8px;z-index:3">
+    <div id="sv-av" class="avatar av32"></div>
+    <div style="color:#fff;font-weight:700;font-size:14px" id="sv-name"></div>
+  </div>
+  <div class="story-content" id="sv-content"></div>
+  <div style="position:absolute;bottom:80px;left:0;right:0;display:flex;justify-content:center;gap:8px;z-index:3;padding:0 20px;flex-wrap:wrap" id="sv-bottom-info"></div>
+  <div style="position:absolute;bottom:24px;right:20px;display:flex;gap:10px;align-items:center;z-index:3">
+    <span id="sv-like-count" style="color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.8)"></span>
+    <button id="sv-like-btn" onclick="likeCurrentStory()" style="background:rgba(0,0,0,.5);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center">🤍</button>
+  </div>
+</div>
+
+<script>
+const OWNER_USERNAME='aradhya09',OWNER_PASSWORD='aradhyasrivastava09';
+const HAS_SHARED_STORAGE=(typeof window!=='undefined'&&!!window.storage);
+let DB={users:{},posts:[],ngls:[],ownerNGLs:[],stories:[],loginNotifs:[],dms:{},notifications:{}};
+let currentUser=null,isOwner=false,currentDMWith=null,storyTimer=null,currentStoryId=null;
+
+function saveDB(){
+  try{localStorage.setItem('araverse_db',JSON.stringify(DB))}catch(e){}
+  if(HAS_SHARED_STORAGE){try{window.storage.set('araverse_db',JSON.stringify(DB),true).catch(()=>{})}catch(e){}}
+}
+async function loadDB(){
+  if(HAS_SHARED_STORAGE){
+    try{const r=await window.storage.get('araverse_db',true);if(r&&r.value){DB=JSON.parse(r.value);return}}catch(e){}
+  }
+  try{const d=localStorage.getItem('araverse_db');if(d)DB=JSON.parse(d)}catch(e){}
+}
+
+function toast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function randColor(){return['#7c3aed','#ec4899','#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'][Math.floor(Math.random()*9)]}
+function getInitials(u){return(u||'?').slice(0,2).toUpperCase()}
+function timeAgo(ts){const d=(Date.now()-ts)/1000;if(d<60)return'just now';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago'}
+
+// ===== NGL PUBLIC PAGE =====
+function checkNGLParam(){
+  const p=new URLSearchParams(window.location.search);
+  const nglUser=p.get('ngl');
+  if(!nglUser)return;
+  document.getElementById('ngl-public-screen').classList.add('show');
+  document.getElementById('auth-screen').style.display='none';
+  const u=DB.users[nglUser];
+  const av=document.getElementById('ngl-pub-av');
+  if(u){av.style.background=u.color;av.textContent=getInitials(u.username);}
+  document.getElementById('ngl-pub-name').textContent=u?`@${u.username}`:`@${nglUser}`;
+  document.getElementById('ngl-public-screen').dataset.target=nglUser;
+}
+function submitPublicNGL(){
+  const txt=document.getElementById('ngl-pub-input').value.trim();
+  if(!txt){toast('Write a question first!');return}
+  const toUser=document.getElementById('ngl-public-screen').dataset.target;
+  if(!DB.ngls)DB.ngls=[];
+  // Store sender info as 'anonymous' — the post owner will see it as anonymous
+  DB.ngls.push({id:'ngl'+Date.now(),toUser,fromUser:'anonymous',senderLabel:'Someone',question:txt,ts:Date.now(),answered:false});
+  saveDB();document.getElementById('ngl-pub-input').value='';
+  toast('Sent! They got your question 👀 They won\'t know it\'s you!');
+}
+function showAppFromNGL(e){e.preventDefault();document.getElementById('ngl-public-screen').classList.remove('show');document.getElementById('auth-screen').style.display='flex';}
+
+// ===== INIT (async so shared storage loads before app boots) =====
+async function initApp(){
+  await loadDB();
+  if(!DB._seeded){
+    DB._seeded=true;DB.dms={};
+    DB.users['ara_demo']={username:'ara_demo',password:'demo123',color:'#7c3aed',followers:[],following:[],followRequests:[],isPrivate:false,createdAt:Date.now()-86400000};
+    DB.posts.push({id:'p0',username:'ara_demo',body:'Welcome to AraVerse v3! ✦ Now with DMs, Photos, Reels & working NGL links 🌌',ts:Date.now()-7200000,likes:[],comments:[],type:'text'});
+    DB.stories.push({id:'s0',username:'ara_demo',text:'Welcome to AraVerse! ✨ Your world, your stories.',bg:'linear-gradient(135deg,#1a0a3a,#4a1280)',ts:Date.now()-3600000,likes:[],viewers:[]});
+  }
+  if(!DB.dms)DB.dms={};
+  if(!DB.notifications)DB.notifications={};
+  if(!DB.posts)DB.posts=[];if(!DB.stories)DB.stories=[];if(!DB.ngls)DB.ngls=[];if(!DB.loginNotifs)DB.loginNotifs=[];
+  DB.stories.forEach(s=>{if(!s.likes)s.likes=[];if(!s.viewers)s.viewers=[];});
+  Object.values(DB.users).forEach(u=>{if(!u.followRequests)u.followRequests=[];if(typeof u.isPrivate!=='boolean')u.isPrivate=false;if(!u.followers)u.followers=[];if(!u.following)u.following=[];});
+  saveDB();
+  checkNGLParam();
+  if(HAS_SHARED_STORAGE)startSync();
+}
+function startSync(){
+  setInterval(async()=>{
+    if(!currentUser)return;
+    try{
+      const r=await window.storage.get('araverse_db',true);
+      if(!r||!r.value)return;
+      const fresh=JSON.parse(r.value);
+      DB=fresh;
+      if(!isOwner)currentUser=DB.users[currentUser.username]||currentUser;
+      buildBottomNav();
+      const visible=id=>!document.getElementById(id)?.classList.contains('hide');
+      if(visible('page-home'))renderFeed();
+      if(visible('page-notifications'))renderNotifications();
+      if(visible('page-messages')){renderDMList();if(currentDMWith)renderChatMessages(currentDMWith);}
+      if(visible('page-profile'))renderProfile();
+      if(visible('page-explore')&&document.getElementById('search-input')?.value)searchUsers(document.getElementById('search-input').value);
+    }catch(e){}
+  },4000);
+}
+initApp();
+
+// ===== AUTH =====
+function switchTab(t){
+  document.querySelectorAll('.auth-tab').forEach((e,i)=>e.classList.toggle('active',i===(t==='login'?0:1)));
+  document.getElementById('login-form').classList.toggle('hide',t!=='login');
+  document.getElementById('signup-form').classList.toggle('hide',t!=='signup');
+}
+function doSignup(){
+  const u=document.getElementById('su-user').value.trim().toLowerCase();
+  const p=document.getElementById('su-pass').value;
+  if(!u||!p){toast('Fill all fields');return}
+  if(u===OWNER_USERNAME){toast('Reserved username');return}
+  if(DB.users[u]){toast('Username taken');return}
+  DB.users[u]={username:u,password:p,color:randColor(),followers:[],following:[],followRequests:[],isPrivate:false,createdAt:Date.now()};
+  DB.loginNotifs.push({username:u,action:'just signed up',time:Date.now(),type:'signup'});
+  saveDB();toast('Account created! Sign in ✦');switchTab('login');
+  document.getElementById('login-user').value=u;document.getElementById('login-pass').value='';
+}
+function doLogin(){
+  const ui=document.getElementById('login-user').value.trim().toLowerCase();
+  const p=document.getElementById('login-pass').value;
+  if((ui===OWNER_USERNAME)&&p===OWNER_PASSWORD){isOwner=true;currentUser={username:OWNER_USERNAME,color:'#7c3aed'};bootApp();goPage('owner');return;}
+  const user=DB.users[ui];
+  if(!user||user.password!==p){toast('Wrong credentials');return}
+  currentUser=user;isOwner=false;
+  DB.loginNotifs.push({username:user.username,action:'logged in',time:Date.now(),type:'login'});
+  saveDB();bootApp();goPage('home');
+}
+function ownerLoginPrompt(e){e.preventDefault();openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title gradient-text">Owner Login ✦</div><div class="form-group"><label class="form-label">Username</label><input id="ow-u" type="text" /></div><div class="form-group"><label class="form-label">Password</label><input id="ow-p" type="password" onkeydown="if(event.key==='Enter')ownerSubmit()" /></div><button class="btn-primary" style="width:100%" onclick="ownerSubmit()">Enter</button>`);}
+function ownerSubmit(){const u=document.getElementById('ow-u')?.value.trim(),p=document.getElementById('ow-p')?.value;if(u===OWNER_USERNAME&&p===OWNER_PASSWORD){isOwner=true;currentUser={username:OWNER_USERNAME,color:'#7c3aed'};closeModal();bootApp();goPage('owner');}else toast('Wrong credentials');}
+function doLogout(){currentUser=null;isOwner=false;currentDMWith=null;document.getElementById('auth-screen').style.display='flex';document.getElementById('main-app').classList.add('hide');}
+function bootApp(){
+  document.getElementById('auth-screen').style.display='none';document.getElementById('main-app').classList.remove('hide');
+  const av=document.getElementById('nav-av');av.style.background=currentUser.color;av.textContent=getInitials(currentUser.username);
+  buildBottomNav();renderStoryBar();updateNGLLink();if(!isOwner)renderFeed();
+}
+
+function getUnreadCount(){
+  if(!currentUser||isOwner)return 0;let c=0;
+  Object.entries(DB.dms||{}).forEach(([k,msgs])=>{if(k.includes(currentUser.username))msgs.forEach(m=>{if(m.to===currentUser.username&&!m.read)c++;});});
+  return c;
+}
+function buildBottomNav(){
+  const nav=document.getElementById('bottom-nav'),unread=getUnreadCount();
+  if(isOwner){nav.innerHTML=`<button class="bnav-item active" onclick="goPage('owner')"><i class="ti ti-crown"></i>Dashboard</button><button class="bnav-item" onclick="goPage('home')"><i class="ti ti-home"></i>Feed</button><button class="bnav-item" onclick="goPage('explore')"><i class="ti ti-search"></i>Explore</button>`;return;}
+  const unreadNotifs=(DB.notifications?.[currentUser?.username]||[]).filter(n=>!n.read).length;
+  nav.innerHTML=`<button class="bnav-item active" onclick="goPage('home')"><i class="ti ti-home"></i>Home</button>
+    <button class="bnav-item" onclick="goPage('explore')"><i class="ti ti-search"></i>Explore</button>
+    <button class="bnav-item" onclick="goPage('ngl')"><i class="ti ti-link"></i>NGL</button>
+    <button class="bnav-item" onclick="goPage('messages')" style="position:relative"><i class="ti ti-message-circle"></i>${unread?`<span class="bnav-badge">${unread}</span>`:''}DMs</button>
+    <button class="bnav-item" onclick="goPage('notifications')" style="position:relative"><i class="ti ti-bell"></i>${unreadNotifs?`<span class="bnav-badge">${unreadNotifs}</span>`:''}Alerts</button>
+    <button class="bnav-item" onclick="goPage('profile')"><i class="ti ti-user"></i>Profile</button>`;
+}
+
+// ===== NAVIGATION =====
+function goPage(p){
+  ['home','explore','ngl','notifications','profile','owner','messages'].forEach(n=>{const el=document.getElementById('page-'+n);if(el)el.classList.add('hide');});
+  const pg=document.getElementById('page-'+p);if(pg)pg.classList.remove('hide');
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  const pages=isOwner?['owner','home','explore']:['home','explore','ngl','messages','notifications','profile'];
+  const idx=pages.indexOf(p);const btns=document.querySelectorAll('.bnav-item');
+  if(idx>=0&&btns[idx])btns[idx].classList.add('active');
+  if(p==='profile')renderProfile();if(p==='ngl'){renderNGLPage();updateNGLLink();}
+  if(p==='home')renderFeed();if(p==='owner')renderOwner();if(p==='explore')renderExplore();if(p==='messages')renderDMList();if(p==='notifications')renderNotifications();
+}
+
+// ===== FEED =====
+function renderFeed(){renderStoryBar();const el=document.getElementById('home-posts');const posts=[...DB.posts].sort((a,b)=>b.ts-a.ts);el.innerHTML=posts.length?posts.map(p=>postHTML(p)).join(''):'<div class="card text-center muted" style="padding:40px">Nothing yet ✦</div>';}
+
+// Get pending NGL questions for a post (posts with nglLink belong to the post author — show them their inbox)
+function getPendingNGLForPost(postUsername){
+  if(!currentUser||currentUser.username!==postUsername)return[];
+  return (DB.ngls||[]).filter(n=>n.toUser===postUsername&&!n.answered);
+}
+
+function postHTML(p){
+  const u=DB.users[p.username]||{color:'#6366f1'};
+  const liked=p.likes?.includes(currentUser?.username);
+  const isMe=p.username===currentUser?.username;
+  let media='';
+  if(p.mediaData&&p.mediaType==='image')media=`<div class="post-media-wrap"><img class="post-media" src="${p.mediaData}" /><span class="post-type-badge">📷 Photo</span></div>`;
+  else if(p.mediaData&&p.mediaType==='video')media=`<div class="post-media-wrap"><video class="post-media" src="${p.mediaData}" controls playsinline style="object-fit:contain;background:#000"></video><span class="post-type-badge">🎬 Reel</span></div>`;
+
+  // NGL inbox shown only to post owner, only on posts that have an nglLink
+  let nglInbox='';
+  if(p.nglLink&&isMe){
+    const qs=getPendingNGLForPost(p.username);
+    if(qs.length){
+      const items=qs.map(q=>`
+        <div class="ngl-inbox-item">
+          <div class="ngl-inbox-q">💬 ${q.question}</div>
+          <div class="ngl-inbox-meta">Anonymous · ${timeAgo(q.ts)}</div>
+          <div class="ngl-inbox-reply">
+            <input id="ansp-${q.id}" placeholder="Reply publicly…" />
+            <button class="btn-primary" onclick="answerNGLFromPost('${q.id}')">Reply ✦</button>
+          </div>
+        </div>`).join('');
+      nglInbox=`<div class="ngl-inbox-banner">
+        <div class="inbox-label"><span>📥</span> ${qs.length} new anonymous question${qs.length>1?'s':''} — only you see this</div>
+        ${items}
+      </div>`;
+    }
+  }
+
+  return`<div class="post-card"><div class="post-header"><div class="avatar av32" style="background:${u.color}">${getInitials(p.username)}</div><div style="flex:1"><div class="post-username" onclick="viewUserProfile('${p.username}')">@${p.username}</div><div class="post-time">${timeAgo(p.ts)}</div></div>${isMe?`<button onclick="deletePost('${p.id}')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer">🗑</button>`:''}</div>
+  ${p.nglQuestion?`<div class="post-ngl"><div class="q">💬 Anonymous asked:</div><div style="margin-top:4px">${p.nglQuestion}</div><div style="margin-top:10px">${p.body}</div></div>`:`<div class="post-body">${p.body||''}</div>`}
+  ${media}
+  ${p.nglLink?`<div style="padding:0 14px 12px"><a class="ngl-link-box" href="${p.nglLink}" target="_blank" rel="noopener" style="display:block;text-decoration:none;color:inherit" onclick="event.stopPropagation()">🔗 Ask me anonymously: ${p.nglLink}</a><button class="btn-ghost btn-sm" style="margin-top:6px" onclick="copyText('${p.nglLink}')">Copy Link</button></div>`:''}
+  ${nglInbox}
+  <div class="post-actions"><button class="post-action${liked?' liked':''}" onclick="likePost('${p.id}')"><i class="ti ti-heart"></i> ${p.likes?.length||0}</button><button class="post-action" onclick="viewComments('${p.id}')"><i class="ti ti-message"></i> ${p.comments?.length||0}</button><button class="post-action" onclick="sharePost('${p.id}')"><i class="ti ti-share"></i></button></div></div>`;
+}
+
+// Answer NGL from the inline post inbox
+function answerNGLFromPost(id){
+  const q=(DB.ngls||[]).find(n=>n.id===id);if(!q)return;
+  const ans=document.getElementById('ansp-'+id)?.value.trim();
+  if(!ans){toast('Write a reply');return}
+  DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body:ans,ts:Date.now(),likes:[],comments:[],type:'text',nglQuestion:q.question});
+  q.answered=true;addReplyToStory(q.question,ans);saveDB();toast('Replied & shared to story! ✦');renderFeed();renderStoryBar();
+}
+
+function deletePost(id){DB.posts=DB.posts.filter(p=>p.id!==id);saveDB();renderFeed();toast('Deleted');}
+function copyText(t){navigator.clipboard?.writeText(t).catch(()=>{});toast('Copied!');}
+function likePost(id){if(!currentUser)return;const p=DB.posts.find(x=>x.id===id);if(!p)return;if(!p.likes)p.likes=[];const i=p.likes.indexOf(currentUser.username);if(i>=0)p.likes.splice(i,1);else{p.likes.push(currentUser.username);addNotification(p.username,'like',currentUser.username,{postId:p.id});}saveDB();renderFeed();}
+function viewComments(id){
+  const p=DB.posts.find(x=>x.id===id);if(!p)return;
+  const comments=p.comments||[];
+  openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">Comments (${comments.length})</div><div id="cmt-list" style="margin-bottom:16px">${comments.length?comments.map(c=>{const cu=DB.users[c.user]||{color:'#6366f1'};return`<div class="comment-item"><div class="avatar av28" style="background:${cu.color}">${getInitials(c.user)}</div><div><span style="font-weight:700;font-size:13px">@${c.user}</span> <span style="font-size:14px">${c.text}</span><div class="muted" style="font-size:11px">${timeAgo(c.ts)}</div></div></div>`;}).join(''):'<div class="muted small">No comments yet!</div>'}</div><textarea id="cmt-txt" rows="2" placeholder="Add a comment..." style="margin-bottom:10px;resize:none"></textarea><button class="btn-primary" style="width:100%" onclick="submitComment('${id}')">Post</button>`);
+}
+function submitComment(id){const txt=document.getElementById('cmt-txt')?.value.trim();if(!txt)return;const p=DB.posts.find(x=>x.id===id);if(!p)return;if(!p.comments)p.comments=[];p.comments.push({user:currentUser.username,text:txt,ts:Date.now()});addNotification(p.username,'comment',currentUser.username,{postId:p.id,text:txt});saveDB();closeModal();renderFeed();toast('Comment posted!');}
+function sharePost(id){
+  const p=DB.posts.find(x=>x.id===id);if(!p)return;
+  openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">Share Post</div>
+  <button class="btn-primary" style="width:100%;margin-bottom:10px" onclick="sharePostToStory('${id}')">✨ Share to My Story</button>
+  <div style="font-weight:600;margin:12px 0 8px;font-size:14px">Send via DM</div>
+  <div>${Object.values(DB.users).filter(u=>u.username!==currentUser?.username).map(u=>`<div class="user-search-item" onclick="sharePostDM('${id}','${u.username}')"><div class="avatar av32" style="background:${u.color}">${getInitials(u.username)}</div><div style="font-weight:700">@${u.username}</div></div>`).join('')||'<div class="muted small">No users yet</div>'}</div>`);
+}
+function sharePostToStory(id){const p=DB.posts.find(x=>x.id===id);if(!p)return;DB.stories.push({id:'s'+Date.now(),username:currentUser.username,text:`Shared from @${p.username}: "${(p.body||'[media]').slice(0,80)}"`,bg:'linear-gradient(135deg,#0a1a3a,#0a3a7a)',ts:Date.now(),likes:[],viewers:[]});saveDB();closeModal();toast('Shared to your story! ✨');}
+function sharePostDM(pid,toUser){const p=DB.posts.find(x=>x.id===pid);if(!p)return;sendDMMessage(toUser,`📤 Post by @${p.username}: "${(p.body||'[media]').slice(0,60)}"`);closeModal();toast(`Sent to @${toUser}!`);}
+
+// POST COMPOSE
+function openPostCompose(){
+  openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">New Post ✦</div>
+  <div class="compose-tabs"><button class="compose-tab active" onclick="switchComposeTab('text',this)">✍️ Text</button><button class="compose-tab" onclick="switchComposeTab('photo',this)">📷 Photo</button><button class="compose-tab" onclick="switchComposeTab('reel',this)">🎬 Reel</button></div>
+  <div id="cmp-text"><textarea id="compose-txt" rows="4" placeholder="What's on your mind?" style="margin-bottom:12px;resize:none"></textarea></div>
+  <div id="cmp-photo" class="hide"><textarea id="compose-cap-photo" rows="2" placeholder="Caption (optional)" style="margin-bottom:10px;resize:none"></textarea><input type="file" id="photo-input" accept="image/*" onchange="previewMedia(this,'photo-prev','image')" style="padding:8px;margin-bottom:8px" /><div id="photo-prev"></div></div>
+  <div id="cmp-reel" class="hide"><textarea id="compose-cap-reel" rows="2" placeholder="Caption (optional)" style="margin-bottom:10px;resize:none"></textarea><input type="file" id="video-input" accept="video/*" onchange="previewMedia(this,'video-prev','video')" style="padding:8px;margin-bottom:8px" /><div id="video-prev"></div></div>
+  <button class="post-btn-big" style="width:100%;margin-top:8px;margin-bottom:6px" onclick="submitPost()">Post ✦</button>
+  <button class="btn-ghost" style="width:100%" onclick="closeModal()">Cancel</button>`);
+}
+function switchComposeTab(t,btn){document.querySelectorAll('.compose-tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');['text','photo','reel'].forEach(x=>document.getElementById('cmp-'+x)?.classList.toggle('hide',x!==t));}
+function previewMedia(inp,prevId,type){const file=inp.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{const el=document.getElementById(prevId);if(type==='image')el.innerHTML=`<img src="${e.target.result}" style="width:100%;border-radius:8px;max-height:200px;object-fit:cover">`;else el.innerHTML=`<video src="${e.target.result}" controls style="width:100%;border-radius:8px;max-height:200px"></video>`;};r.readAsDataURL(file);}
+function submitPost(){
+  const tab=document.querySelector('.compose-tab.active')?.textContent||'';
+  if(tab.includes('Photo')){
+    const body=document.getElementById('compose-cap-photo')?.value.trim()||'';
+    const file=document.getElementById('photo-input')?.files[0];
+    if(file){const r=new FileReader();r.onload=e=>{DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body,ts:Date.now(),likes:[],comments:[],type:'photo',mediaData:e.target.result,mediaType:'image'});saveDB();closeModal();renderFeed();toast('Photo posted! 📷');};r.readAsDataURL(file);return;}
+    if(!body){toast('Add a photo or caption');return}
+    DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body,ts:Date.now(),likes:[],comments:[],type:'photo'});
+  } else if(tab.includes('Reel')){
+    const body=document.getElementById('compose-cap-reel')?.value.trim()||'';
+    const file=document.getElementById('video-input')?.files[0];
+    if(file){const r=new FileReader();r.onload=e=>{DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body,ts:Date.now(),likes:[],comments:[],type:'reel',mediaData:e.target.result,mediaType:'video'});saveDB();closeModal();renderFeed();toast('Reel posted! 🎬');};r.readAsDataURL(file);return;}
+    if(!body){toast('Add a video or caption');return}
+    DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body,ts:Date.now(),likes:[],comments:[],type:'reel'});
+  } else {
+    const body=document.getElementById('compose-txt')?.value.trim();
+    if(!body){toast('Write something!');return}
+    DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body,ts:Date.now(),likes:[],comments:[],type:'text'});
+  }
+  saveDB();closeModal();renderFeed();toast('Posted! ✦');
+}
+
+// ===== STORIES =====
+function renderStoryBar(){
+  const bar=document.getElementById('story-bar');if(!bar)return;
+  let html=`<div class="story-item" onclick="openAddStory()"><div class="story-ring"><div class="story-inner"><div class="avatar av44" style="background:${currentUser?.color||'#7c3aed'}">+</div></div></div><div class="story-name">Add</div></div>`;
+  const myS=DB.stories.filter(s=>s.username===currentUser?.username);
+  if(myS.length){const s=myS[myS.length-1];html+=`<div class="story-item" onclick="viewStory('${s.id}')"><div class="story-ring"><div class="story-inner"><div class="avatar av44" style="background:${currentUser.color}">${getInitials(currentUser.username)}</div></div></div><div class="story-name">Your Story</div></div>`;}
+  const seen={};DB.stories.filter(s=>s.username!==currentUser?.username).forEach(s=>{if(!seen[s.username])seen[s.username]=s;});
+  Object.values(seen).forEach(s=>{const u=DB.users[s.username]||{color:'#6366f1'};html+=`<div class="story-item" onclick="viewStory('${s.id}')"><div class="story-ring"><div class="story-inner"><div class="avatar av44" style="background:${u.color}">${getInitials(s.username)}</div></div></div><div class="story-name">@${s.username}</div></div>`;});
+  bar.innerHTML=html;
+}
+function openAddStory(){openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">Add Story</div><textarea id="story-txt" rows="3" placeholder="What's your story?" style="margin-bottom:12px;resize:none"></textarea><select id="story-bg-sel" style="margin-bottom:14px"><option value="purple">Purple Vibe ✦</option><option value="pink">Pink Dream</option><option value="blue">Blue Hour</option><option value="dark">Dark Night</option><option value="green">Green Aura</option></select><button class="btn-primary" style="width:100%" onclick="submitStory()">Share Story ✨</button>`);}
+function submitStory(){const txt=document.getElementById('story-txt')?.value.trim();if(!txt){toast('Write something!');return}const bg=document.getElementById('story-bg-sel')?.value;const bgMap={purple:'linear-gradient(135deg,#1a0a3a,#4a1280)',pink:'linear-gradient(135deg,#3a0a1a,#7a1240)',blue:'linear-gradient(135deg,#0a1a3a,#0a3a7a)',dark:'linear-gradient(135deg,#0a0a0a,#1a1a2a)',green:'linear-gradient(135deg,#0a2a0a,#0a3a1a)'};DB.stories.push({id:'s'+Date.now(),username:currentUser.username,text:txt,bg:bgMap[bg]||bgMap.purple,ts:Date.now(),likes:[],viewers:[]});saveDB();closeModal();renderStoryBar();toast('Story posted! ✨');}
+function shareToStory(){openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">Share NGL Link to Story ✨</div><select id="ngl-story-bg" style="margin-bottom:14px"><option value="purple">Purple Vibe</option><option value="pink">Pink Dream</option><option value="blue">Blue Hour</option></select><button class="btn-primary" style="width:100%" onclick="submitNGLStory()">Share to Story</button>`);}
+function submitNGLStory(){const bg=document.getElementById('ngl-story-bg')?.value;const bgMap={purple:'linear-gradient(135deg,#1a0a3a,#4a1280)',pink:'linear-gradient(135deg,#3a0a1a,#7a1240)',blue:'linear-gradient(135deg,#0a1a3a,#0a3a7a)'};const link=getNGLLink();DB.stories.push({id:'s'+Date.now(),username:currentUser.username,text:`💬 Ask me anything anonymously!\n\n🔗 Tap & ask — I reply to everything!`,bg:bgMap[bg]||bgMap.purple,ts:Date.now(),likes:[],viewers:[],isNGLStory:true,nglLink:link});saveDB();closeModal();renderStoryBar();toast('NGL shared to story! ✨');}
+function viewStory(id){
+  const s=DB.stories.find(x=>x.id===id);if(!s)return;
+  currentStoryId=id;
+  const u=DB.users[s.username]||{color:'#6366f1'};
+  if(!s.viewers)s.viewers=[];if(!s.likes)s.likes=[];
+  if(currentUser&&!s.viewers.includes(currentUser.username)){s.viewers.push(currentUser.username);saveDB();}
+  const sv=document.getElementById('story-viewer');
+  document.getElementById('sv-bg').style.background=s.bg||'linear-gradient(135deg,#1a0a3a,#0a1535)';
+  document.getElementById('sv-name').textContent='@'+s.username;
+  const av=document.getElementById('sv-av');av.style.background=u.color;av.textContent=getInitials(s.username);
+  let contentHTML=`<div style="color:#fff;font-size:18px;line-height:1.6;font-weight:500;text-shadow:0 2px 8px rgba(0,0,0,.5);white-space:pre-line">${s.text}</div>`;
+  if(s.isNGLStory)contentHTML+=`<div style="margin-top:16px"><button class="btn-primary btn-sm" onclick="openNGLFromStory('${s.username}')">Ask Anonymously 💬</button></div>`;
+  document.getElementById('sv-content').innerHTML=contentHTML;
+  document.getElementById('story-progress').innerHTML='<div class="story-prog-bar"><div class="story-prog-fill"></div></div>';
+  const liked=(s.likes||[]).includes(currentUser?.username);
+  const likeBtn=document.getElementById('sv-like-btn');likeBtn.textContent=liked?'❤️':'🤍';
+  document.getElementById('sv-like-count').textContent=(s.likes.length||0)?s.likes.length+' ❤️':'';
+  const isMyStory=s.username===currentUser?.username;
+  document.getElementById('sv-bottom-info').innerHTML=isMyStory&&s.viewers?.length?`<div style="background:rgba(0,0,0,.5);backdrop-filter:blur(4px);border-radius:20px;padding:4px 12px;font-size:12px;color:#fff;font-weight:600">👁 ${s.viewers.length} viewer${s.viewers.length>1?'s':''}: ${s.viewers.slice(0,3).map(v=>'@'+v).join(', ')}${s.viewers.length>3?'...':''}</div>`:'';
+  sv.classList.remove('hide');if(storyTimer)clearTimeout(storyTimer);storyTimer=setTimeout(closeStory,5200);
+}
+function likeCurrentStory(){const s=DB.stories.find(x=>x.id===currentStoryId);if(!s||!currentUser)return;if(!s.likes)s.likes=[];const i=s.likes.indexOf(currentUser.username);if(i>=0)s.likes.splice(i,1);else s.likes.push(currentUser.username);saveDB();const liked=s.likes.includes(currentUser.username);document.getElementById('sv-like-btn').textContent=liked?'❤️':'🤍';document.getElementById('sv-like-count').textContent=s.likes.length?s.likes.length+' ❤️':'';}
+function openNGLFromStory(u){closeStory();sendNGLQuestion(u);}
+function closeStory(){document.getElementById('story-viewer').classList.add('hide');if(storyTimer)clearTimeout(storyTimer);}
+
+// ===== NGL =====
+function getNGLLink(){const base=window.location.href.split('?')[0];return`${base}?ngl=${currentUser?.username}`;}
+function updateNGLLink(){if(!currentUser||isOwner)return;document.getElementById('my-ngl-link').textContent=getNGLLink();}
+function copyNGLLink(){navigator.clipboard?.writeText(getNGLLink()).catch(()=>{});toast('NGL link copied! 🔗 Share anywhere!');}
+function postNGLToFeed(){const link=getNGLLink();DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body:'Ask me anything anonymously! 💬',ts:Date.now(),likes:[],comments:[],type:'text',nglLink:link});saveDB();toast('Posted to feed!');if(!document.getElementById('page-home').classList.contains('hide'))renderFeed();}
+function renderNGLPage(){
+  const qs=(DB.ngls||[]).filter(n=>n.toUser===currentUser?.username);
+  const el=document.getElementById('ngl-questions');
+  if(!qs.length){el.innerHTML='<div class="card text-center muted" style="padding:30px">No questions yet!<br>Copy your link and share it on WhatsApp, Instagram, anywhere. People can ask you anonymously. ✦</div>';return}
+  el.innerHTML=[...qs].reverse().map(q=>`<div class="ngl-q-item"><div class="pill pill-purple mb8">💬 Anonymous</div><div style="font-size:15px;margin-bottom:10px">${q.question}</div><div class="muted small mb8">${timeAgo(q.ts)}</div>${q.answered?`<div class="pill pill-green">✓ Replied</div>`:`<div style="display:flex;gap:8px"><input id="ans-${q.id}" placeholder="Answer publicly..." style="flex:1;font-size:13px"><button class="btn-primary btn-sm" onclick="answerNGL('${q.id}')">Reply</button></div>`}</div>`).join('');
+}
+function answerNGL(id){const q=(DB.ngls||[]).find(n=>n.id===id);if(!q)return;const ans=document.getElementById('ans-'+id)?.value.trim();if(!ans){toast('Write a reply');return}DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body:ans,ts:Date.now(),likes:[],comments:[],type:'text',nglQuestion:q.question});q.answered=true;addReplyToStory(q.question,ans);saveDB();toast('Replied & shared to story! ✦');renderNGLPage();renderStoryBar();}
+function addReplyToStory(question,answer){
+  if(!DB.stories)DB.stories=[];
+  DB.stories.push({id:'s'+Date.now(),username:currentUser.username,text:`💬 Anonymous asked: "${question}"\n\n${answer}`,bg:'linear-gradient(135deg,#1a0a3a,#4a1280)',ts:Date.now(),likes:[],viewers:[]});
+}
+function sendNGLQuestion(toUser){openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">Ask @${toUser} anonymously 💬</div><div class="muted small mb12">They won't know it's you</div><textarea id="ngl-ask-txt" rows="3" placeholder="Your question..." style="margin-bottom:12px;resize:none"></textarea><button class="btn-primary" style="width:100%" onclick="submitNGLQ('${toUser}')">Send Anonymously</button>`);}
+function submitNGLQ(toUser){const txt=document.getElementById('ngl-ask-txt')?.value.trim();if(!txt){toast('Write a question');return}if(!DB.ngls)DB.ngls=[];DB.ngls.push({id:'ngl'+Date.now(),toUser,fromUser:currentUser?.username||'anonymous',question:txt,ts:Date.now(),answered:false});saveDB();closeModal();toast('Sent anonymously! 💬');}
+function sendOwnerNGL(){const txt=document.getElementById('owner-ngl-input').value.trim();if(!txt){toast('Write first');return}if(!DB.ownerNGLs)DB.ownerNGLs=[];DB.ownerNGLs.push({id:'ongl'+Date.now(),fromUser:currentUser?.username||'anonymous',question:txt,ts:Date.now()});saveDB();document.getElementById('owner-ngl-input').value='';toast('Sent anonymously! 💬');}
+
+// ===== EXPLORE =====
+function renderExplore(){const posts=[...DB.posts].sort((a,b)=>(b.likes?.length||0)-(a.likes?.length||0)).slice(0,20);document.getElementById('explore-posts').innerHTML=posts.length?posts.map(p=>postHTML(p)).join(''):'<div class="card text-center muted" style="padding:30px">Nothing yet</div>';}
+function searchUsers(q){
+  const el=document.getElementById('search-results');if(!q.trim()){el.innerHTML='';return}
+  const users=Object.values(DB.users).filter(u=>u.username.toLowerCase().includes(q.toLowerCase())&&u.username!==currentUser?.username);
+  el.innerHTML=users.length?users.map(u=>{const st=followStatus(u.username);return`<div class="user-search-item"><div class="avatar av44" style="background:${u.color}">${getInitials(u.username)}</div><div style="flex:1;cursor:pointer" onclick="viewUserProfile('${u.username}')"><div style="font-weight:700">@${u.username}${u.isPrivate?' 🔒':''}</div><div class="muted small">${u.followers?.length||0} followers</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="${followBtnClass(st)} btn-sm fbtn-${cssId(u.username)}" onclick="followUser('${u.username}')">${followBtnLabel(st)}</button><button class="btn-ghost btn-sm" onclick="sendNGLQuestion('${u.username}')">Ask</button><button class="btn-ghost btn-sm" onclick="startDM('${u.username}')">💬</button></div></div>`;}).join(''):'<div class="muted small" style="padding:10px">No users found</div>';
+}
+function followStatus(username){
+  // returns: 'me' | 'following' | 'requested' | 'follow-back' | 'follow'
+  if(!currentUser||username===currentUser.username)return'me';
+  const me=DB.users[currentUser.username],them=DB.users[username];if(!me||!them)return'follow';
+  if(me.following?.includes(username))return'following';
+  if(them.followRequests?.includes(currentUser.username))return'requested';
+  if(them.followers?.includes(currentUser.username))return'follow'; // shouldn't happen normally
+  if(me.followers?.includes(username))return'follow-back';
+  return'follow';
+}
+function followBtnLabel(status){
+  return status==='following'?'Following':status==='requested'?'Requested':status==='follow-back'?'Follow Back':'Follow';
+}
+function followBtnClass(status){
+  return(status==='following'||status==='requested')?'btn-ghost':'btn-primary';
+}
+function followUser(username){
+  if(!currentUser||isOwner||username===currentUser.username)return;
+  const me=DB.users[currentUser.username],them=DB.users[username];if(!me||!them)return;
+  if(!me.following)me.following=[];if(!them.followers)them.followers=[];if(!them.followRequests)them.followRequests=[];
+  const followingIdx=me.following.indexOf(username);
+  const requestIdx=them.followRequests.indexOf(currentUser.username);
+  if(followingIdx>=0){
+    // unfollow
+    me.following.splice(followingIdx,1);
+    const ti=them.followers.indexOf(currentUser.username);if(ti>=0)them.followers.splice(ti,1);
+    toast('Unfollowed');
+  }else if(requestIdx>=0){
+    // cancel pending request
+    them.followRequests.splice(requestIdx,1);
+    toast('Request cancelled');
+  }else if(them.isPrivate){
+    // send follow request
+    them.followRequests.push(currentUser.username);
+    addNotification(username,'follow-request',currentUser.username);
+    toast('Follow request sent ✦');
+  }else{
+    // public account — follow instantly, confirm if mutual
+    me.following.push(username);them.followers.push(currentUser.username);
+    const isMutual=them.following?.includes(currentUser.username);
+    addNotification(username,'follow',currentUser.username);
+    toast(isMutual?`You and @${username} now follow each other! 🤝`:'Following! ✦');
+  }
+  currentUser.following=me.following;saveDB();
+  refreshFollowUI(username);
+}
+function refreshFollowUI(username){
+  document.querySelectorAll(`.fbtn-${cssId(username)}`).forEach(btn=>{
+    const st=followStatus(username);
+    btn.className=`${followBtnClass(st)} btn-sm fbtn-${cssId(username)}`;
+    btn.textContent=followBtnLabel(st);
+  });
+  const si=document.getElementById('search-input');if(si&&si.value)searchUsers(si.value);
+  if(!document.getElementById('page-profile').classList.contains('hide'))renderProfile();
+}
+function cssId(s){return(s||'').replace(/[^a-zA-Z0-9_-]/g,'_');}
+function acceptFollowRequest(username){
+  const me=DB.users[currentUser.username],them=DB.users[username];if(!me||!them)return;
+  if(!me.followRequests)me.followRequests=[];
+  const idx=me.followRequests.indexOf(username);if(idx>=0)me.followRequests.splice(idx,1);
+  if(!me.followers)me.followers=[];if(!them.following)them.following=[];
+  if(!me.followers.includes(username))me.followers.push(username);
+  if(!them.following.includes(currentUser.username))them.following.push(currentUser.username);
+  addNotification(username,'follow-accept',currentUser.username);
+  saveDB();toast(`Accepted @${username} ✦`);renderFollowRequests();renderProfile();
+}
+function declineFollowRequest(username){
+  const me=DB.users[currentUser.username];if(!me)return;
+  if(!me.followRequests)me.followRequests=[];
+  const idx=me.followRequests.indexOf(username);if(idx>=0)me.followRequests.splice(idx,1);
+  saveDB();toast('Declined');renderFollowRequests();
+}
+function renderFollowRequests(){
+  const me=DB.users[currentUser?.username];const reqs=me?.followRequests||[];
+  const badge=document.getElementById('prof-req-badge');
+  if(badge){badge.textContent=reqs.length?reqs.length:'';badge.classList.toggle('hide',!reqs.length);}
+  const el=document.getElementById('follow-requests-list');if(!el)return;
+  el.innerHTML=reqs.length?reqs.map(u=>{const fu=DB.users[u]||{color:'#6366f1'};return`<div class="follow-row"><div class="avatar av32" style="background:${fu.color}">${getInitials(u)}</div><div style="flex:1;font-weight:700">@${u}</div><button class="btn-primary btn-sm" onclick="acceptFollowRequest('${u}')">Confirm</button><button class="btn-ghost btn-sm" onclick="declineFollowRequest('${u}')">Delete</button></div>`;}).join(''):'<div class="muted small">No follow requests</div>';
+}
+function openFollowRequests(){renderFollowRequests();openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">Follow Requests</div><div id="follow-requests-list"></div>`);renderFollowRequests();}
+function togglePrivacy(){
+  const me=DB.users[currentUser.username];if(!me)return;
+  me.isPrivate=!me.isPrivate;currentUser.isPrivate=me.isPrivate;saveDB();
+  toast(me.isPrivate?'Account set to Private 🔒':'Account set to Public 🌐');
+  renderProfile();
+}
+
+// ===== PROFILE =====
+function renderProfile(){
+  if(!currentUser||isOwner)return;const u=DB.users[currentUser.username];
+  document.getElementById('prof-av').style.background=currentUser.color;document.getElementById('prof-av').textContent=getInitials(currentUser.username);
+  document.getElementById('prof-name').textContent='@'+currentUser.username;document.getElementById('prof-email').textContent=currentUser.email||'';
+  document.getElementById('prof-followers').textContent=u?.followers?.length||0;document.getElementById('prof-following').textContent=u?.following?.length||0;
+  const myPosts=DB.posts.filter(p=>p.username===currentUser.username);document.getElementById('prof-posts').textContent=myPosts.length;
+  document.getElementById('my-posts').innerHTML=myPosts.length?myPosts.map(p=>postHTML(p)).join(''):'<div class="muted text-center" style="padding:30px">No posts yet.</div>';
+  const pb=document.getElementById('prof-privacy-btn');if(pb)pb.textContent=u?.isPrivate?'🔒 Private':'🌐 Public';
+  renderFollowRequests();
+}
+function switchProfileTab(tab){
+  ['posts','reels','photos'].forEach(t=>{const btn=document.getElementById('ptab-'+t);if(btn){btn.style.borderBottomColor=t===tab?'#a855f7':'transparent';btn.style.color=t===tab?'var(--text)':'var(--muted)';}});
+  const myPosts=DB.posts.filter(p=>{if(p.username!==currentUser?.username)return false;if(tab==='reels')return p.type==='reel';if(tab==='photos')return p.type==='photo';return true;});
+  document.getElementById('my-posts').innerHTML=myPosts.length?myPosts.map(p=>postHTML(p)).join(''):`<div class="muted text-center" style="padding:30px">No ${tab} yet.</div>`;
+}
+function showFollowModal(type){
+  const u=DB.users[currentUser?.username];if(!u)return;
+  const list=type==='followers'?(u.followers||[]):type==='following'?(u.following||[]):[];
+  openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">${type==='followers'?'Followers':type==='following'?'Following':'Posts'} (${list.length})</div><div>${list.length?list.map(username=>{const fu=DB.users[username]||{color:'#6366f1'};const st=followStatus(username);return`<div class="follow-row"><div class="avatar av32" style="background:${fu.color}">${getInitials(username)}</div><div style="flex:1;font-weight:700">@${username}</div><button class="${followBtnClass(st)} btn-sm fbtn-${cssId(username)}" onclick="followUser('${username}')">${followBtnLabel(st)}</button><button class="btn-ghost btn-sm" onclick="startDM('${username}');closeModal()">💬</button></div>`;}).join(''):'<div class="muted small">None yet</div>'}</div>`);
+}
+function viewUserProfile(username){
+  if(username===currentUser?.username){goPage('profile');return}
+  const u=DB.users[username];if(!u)return;
+  const st=followStatus(username);
+  const canSeePosts=!u.isPrivate||st==='following';
+  const userPosts=canSeePosts?DB.posts.filter(p=>p.username===username):[];
+  const lockedMsg=`<div class="card text-center" style="padding:30px"><div style="font-size:32px;margin-bottom:8px">🔒</div><div class="bold mb4">This account is private</div><div class="muted small">Follow @${username} to see their posts</div></div>`;
+  openModal(`<button class="modal-close" onclick="closeModal()">×</button><div style="text-align:center;padding:16px 0"><div class="avatar av80" style="background:${u.color};margin:0 auto 12px">${getInitials(u.username)}</div><div style="font-size:20px;font-weight:700">@${u.username}${u.isPrivate?' 🔒':''}</div><div style="display:flex;justify-content:center;gap:24px;margin:16px 0"><div class="text-center"><div class="stat-num">${u.isPrivate&&st!=='following'?'-':userPosts.length}</div><div class="stat-label">Posts</div></div><div class="text-center"><div class="stat-num">${u.followers?.length||0}</div><div class="stat-label">Followers</div></div><div class="text-center"><div class="stat-num">${u.following?.length||0}</div><div class="stat-label">Following</div></div></div><div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px"><button class="${followBtnClass(st)} btn-sm fbtn-${cssId(username)}" onclick="followUser('${username}')">${followBtnLabel(st)}</button><button class="btn-ghost btn-sm" onclick="sendNGLQuestion('${username}')">Ask 💬</button><button class="btn-ghost btn-sm" onclick="startDM('${username}');closeModal()">Message</button></div></div><div style="font-weight:700;margin-bottom:10px">Posts</div><div>${canSeePosts?(userPosts.slice(0,3).map(p=>postHTML(p)).join('')||'<div class="muted small">No posts</div>'):lockedMsg}</div>`);
+}
+
+// ===== MESSAGING =====
+function getDMKey(a,b){return[a,b].sort().join('__')}
+function renderDMList(){
+  if(!currentUser)return;
+  const convs=new Set();
+  Object.keys(DB.dms||{}).forEach(k=>{if(k.includes(currentUser.username))k.split('__').filter(u=>u!==currentUser.username).forEach(u=>convs.add(u));});
+  const el=document.getElementById('dm-conversations');
+  if(!convs.size){el.innerHTML='<div class="muted small" style="padding:20px 0">No messages yet. Find people in Explore and tap 💬 to chat!</div>';return}
+  el.innerHTML=[...convs].map(username=>{
+    const u=DB.users[username]||{color:'#6366f1'};const k=getDMKey(currentUser.username,username);const msgs=(DB.dms[k]||[]);const last=msgs[msgs.length-1];const unread=msgs.filter(m=>m.to===currentUser.username&&!m.read).length;
+    return`<div class="dm-item${unread?' active':''}" onclick="openDMChat('${username}')"><div class="avatar av44" style="background:${u.color}">${getInitials(username)}</div><div style="flex:1"><div style="font-weight:700">@${username}</div><div class="muted small" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px">${last?last.text:'Start chatting!'}</div></div>${unread?`<div style="width:8px;height:8px;background:#ec4899;border-radius:50%;flex-shrink:0"></div>`:''}${last?`<div class="muted" style="font-size:11px;flex-shrink:0">${timeAgo(last.ts)}</div>`:''}</div>`;
+  }).join('');
+}
+function openNewDM(){openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">New Message</div><input type="text" placeholder="Search users..." oninput="filterDMSearch(this.value)" style="margin-bottom:12px" /><div id="dm-user-list">${Object.values(DB.users).filter(u=>u.username!==currentUser?.username).map(u=>`<div class="user-search-item" onclick="startDM('${u.username}')"><div class="avatar av44" style="background:${u.color}">${getInitials(u.username)}</div><div style="font-weight:700">@${u.username}</div></div>`).join('')||'<div class="muted small">No users yet</div>'}</div>`);}
+function filterDMSearch(q){const users=Object.values(DB.users).filter(u=>u.username!==currentUser?.username&&u.username.toLowerCase().includes(q.toLowerCase()));document.getElementById('dm-user-list').innerHTML=users.map(u=>`<div class="user-search-item" onclick="startDM('${u.username}')"><div class="avatar av44" style="background:${u.color}">${getInitials(u.username)}</div><div style="font-weight:700">@${u.username}</div></div>`).join('')||'<div class="muted small">Not found</div>';}
+function startDM(username){closeModal();goPage('messages');setTimeout(()=>openDMChat(username),50);}
+function openDMChat(username){
+  currentDMWith=username;const u=DB.users[username]||{color:'#6366f1'};
+  const k=getDMKey(currentUser.username,username);if(DB.dms[k])DB.dms[k].forEach(m=>{if(m.to===currentUser.username)m.read=true;});saveDB();
+  document.getElementById('dm-list-view').classList.add('hide');
+  const cv=document.getElementById('dm-chat-view');cv.classList.remove('hide');cv.style.display='flex';
+  document.getElementById('chat-with-av').style.background=u.color;document.getElementById('chat-with-av').textContent=getInitials(username);
+  document.getElementById('chat-with-name').textContent='@'+username;
+  renderChatMessages(username);buildBottomNav();
+}
+function closeDMChat(){currentDMWith=null;document.getElementById('dm-list-view').classList.remove('hide');const cv=document.getElementById('dm-chat-view');cv.classList.add('hide');cv.style.display='none';renderDMList();buildBottomNav();}
+function renderChatMessages(username){
+  const k=getDMKey(currentUser.username,username);const msgs=DB.dms[k]||[];
+  const el=document.getElementById('chat-messages');
+  el.innerHTML=msgs.length?msgs.map(m=>{const isMe=m.from===currentUser.username;return`<div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'}"><div class="chat-bubble ${isMe?'bubble-me':'bubble-them'}">${m.text}</div><div class="muted" style="font-size:10px;margin-top:2px;text-align:${isMe?'right':'left'}">${isMe?'You':'@'+username} · ${timeAgo(m.ts)}</div></div>`;}).join(''):'<div class="muted small text-center" style="padding:40px 20px">Say hi to @'+username+'! 👋</div>';
+  el.scrollTop=el.scrollHeight;
+}
+function sendDM(){const inp=document.getElementById('chat-input');const txt=inp?.value.trim();if(!txt||!currentDMWith)return;sendDMMessage(currentDMWith,txt);inp.value='';}
+function sendDMMessage(toUser,text){if(!DB.dms)DB.dms={};const k=getDMKey(currentUser.username,toUser);if(!DB.dms[k])DB.dms[k]=[];DB.dms[k].push({id:'dm'+Date.now(),from:currentUser.username,to:toUser,text,ts:Date.now(),read:false});saveDB();if(currentDMWith===toUser)renderChatMessages(toUser);buildBottomNav();}
+
+// ===== OWNER =====
+function renderOwner(){
+  if(!isOwner)return;
+  document.getElementById('ow-users').textContent=Object.keys(DB.users).length;document.getElementById('ow-msgs').textContent=(DB.ownerNGLs||[]).length;document.getElementById('ow-posts').textContent=DB.posts.length;
+  const logins=[...(DB.loginNotifs||[])].reverse().slice(0,30);
+  document.getElementById('ow-logins').innerHTML=logins.length?logins.map(l=>{const u=DB.users[l.username];return`<div class="card mb8 flex ai-center gap10" style="padding:12px 14px"><div class="avatar av32" style="background:${u?.color||'#7c3aed'}">${getInitials(l.username)}</div><div style="flex:1"><span style="font-weight:700">@${l.username}</span><span class="muted"> ${l.action}</span></div><div class="muted small">${timeAgo(l.time)}</div></div>`;}).join(''):'<div class="muted small">No activity</div>';
+  const ngls=[...(DB.ownerNGLs||[])].reverse();
+  document.getElementById('ow-ngls').innerHTML=ngls.length?ngls.map(n=>`<div class="ngl-q-item"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px"><span class="pill pill-purple">💬 Sent to you</span><span class="pill pill-green">👁 From @${n.fromUser}</span></div><div style="font-size:15px;line-height:1.5">${n.question}</div><div class="muted small" style="margin-top:6px">${timeAgo(n.ts)}</div></div>`).join(''):'<div class="muted small">No messages yet</div>';
+  document.getElementById('ow-users-list').innerHTML=Object.values(DB.users).map(u=>`<div class="card mb8 flex ai-center gap10" style="padding:12px 14px"><div class="avatar av32" style="background:${u.color}">${getInitials(u.username)}</div><div style="flex:1"><div style="font-weight:700">@${u.username}</div><div class="muted small">joined ${timeAgo(u.createdAt)}</div></div><div class="muted small">${u.followers?.length||0} followers</div></div>`).join('')||'<div class="muted small">No users</div>';
+}
+
+// ===== NOTIFICATIONS =====
+function addNotification(toUser,type,fromUser,extra={}){
+  if(!toUser||toUser===fromUser)return;
+  if(!DB.notifications)DB.notifications={};
+  if(!DB.notifications[toUser])DB.notifications[toUser]=[];
+  DB.notifications[toUser].push({id:'n'+Date.now()+Math.random().toString(36).slice(2,6),type,fromUser,ts:Date.now(),read:false,...extra});
+  saveDB();
+}
+function notifText(n){
+  if(n.type==='follow')return`started following you`;
+  if(n.type==='follow-request')return`requested to follow you`;
+  if(n.type==='follow-accept')return`accepted your follow request`;
+  if(n.type==='like')return`liked your post`;
+  if(n.type==='comment')return`commented: "${(n.text||'').slice(0,40)}"`;
+  return'sent you a notification';
+}
+function renderNotifications(){
+  const list=[...(DB.notifications?.[currentUser?.username]||[])].reverse();
+  const el=document.getElementById('notifications-list');if(!el)return;
+  el.innerHTML=list.length?list.map(n=>{
+    const u=DB.users[n.fromUser]||{color:'#6366f1'};
+    const actions=n.type==='follow-request'?`<div style="display:flex;gap:6px"><button class="btn-primary btn-sm" onclick="acceptFollowRequest('${n.fromUser}');markNotifRead('${n.id}')">Confirm</button><button class="btn-ghost btn-sm" onclick="declineFollowRequest('${n.fromUser}');markNotifRead('${n.id}')">Delete</button></div>`:'';
+    return`<div class="card mb8 flex ai-center gap10" style="padding:12px 14px;${n.read?'':'border-color:#7c3aed'}" onclick="markNotifRead('${n.id}')"><div class="avatar" style="background:${u.color};width:40px;height:40px;font-size:15px">${getInitials(n.fromUser)}</div><div style="flex:1;cursor:pointer" onclick="viewUserProfile('${n.fromUser}')"><span style="font-weight:700">@${n.fromUser}</span> <span class="muted">${notifText(n)}</span><div class="muted small">${timeAgo(n.ts)}</div></div>${actions}</div>`;
+  }).join(''):'<div class="muted small text-center" style="padding:30px">No notifications yet</div>';
+  buildBottomNav();
+}
+function markNotifRead(id){
+  const list=DB.notifications?.[currentUser?.username]||[];const n=list.find(x=>x.id===id);if(n)n.read=true;saveDB();buildBottomNav();
+}
+
+// ===== MODALS =====
+function openModal(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal-overlay').classList.remove('hide');}
+function closeModal(){document.getElementById('modal-overlay').classList.add('hide');}
+</script>
+</body>
+</html>
