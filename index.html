@@ -277,6 +277,10 @@ button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-siz
       <div id="search-results" class="mb16"></div>
       <div style="font-weight:700;margin-bottom:10px">People You May Know</div>
       <div id="explore-suggest-list" class="mb20"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-weight:700">All Members <span class="muted small" id="all-members-count"></span></span>
+      </div>
+      <div id="all-members-list" class="mb20"></div>
       <div style="font-weight:700;margin-bottom:10px">Trending Posts</div>
       <div id="explore-posts"></div>
     </div>
@@ -497,7 +501,30 @@ async function initApp(){
   const nglActive=checkNGLParam();
   if(HAS_FIREBASE)startFirebaseSync();
   else if(HAS_SHARED_STORAGE)startPollingSync();
+  else startLocalStorageSync();
   if(!nglActive)restoreSession();
+}
+// Fallback sync for when NO backend (Firebase/shared storage) is configured.
+// This only syncs across tabs/windows of the SAME browser on the SAME device —
+// it CANNOT sync across different browsers or devices. For real cross-device
+// messaging between different users, configure Firebase above.
+function startLocalStorageSync(){
+  window.addEventListener('storage',e=>{
+    if(e.key!=='araverse_db'||!e.newValue)return;
+    try{DB=JSON.parse(e.newValue);}catch(err){return}
+    if(currentUser&&!isOwner)currentUser=DB.users[currentUser.username]||currentUser;
+    reRenderVisible();
+  });
+  setInterval(()=>{
+    if(!currentUser)return;
+    try{
+      const raw=localStorage.getItem('araverse_db');if(!raw)return;
+      const parsed=JSON.parse(raw);
+      DB=parsed;
+      if(!isOwner)currentUser=DB.users[currentUser.username]||currentUser;
+      reRenderVisible();
+    }catch(e){}
+  },3000);
 }
 function saveSession(){
   try{localStorage.setItem('araverse_session',JSON.stringify({username:currentUser?.username,isOwner}))}catch(e){}
@@ -524,7 +551,7 @@ function reRenderVisible(){
   if(visible('page-notifications'))renderNotifications();
   if(visible('page-messages')){renderDMList();renderDMSuggestions();if(currentDMWith)renderChatMessages(currentDMWith);}
   if(visible('page-profile'))renderProfile();
-  if(visible('page-explore')){renderExploreSuggestions();if(document.getElementById('search-input')?.value)searchUsers(document.getElementById('search-input').value);}
+  if(visible('page-explore')){renderExploreSuggestions();renderAllMembers();if(document.getElementById('search-input')?.value)searchUsers(document.getElementById('search-input').value);}
 }
 function startFirebaseSync(){
   fbDB.ref('araverse_db').on('value',snap=>{
@@ -613,7 +640,7 @@ function goPage(p){
   if(p==='profile')renderProfile();if(p==='ngl'){renderNGLPage();updateNGLLink();}
   if(p==='home'){renderFeed();renderHomeSuggestions();}
   if(p==='owner')renderOwner();
-  if(p==='explore'){renderExplore();renderExploreSuggestions();}
+  if(p==='explore'){renderExplore();renderExploreSuggestions();renderAllMembers();}
   if(p==='messages'){renderDMList();renderDMSuggestions();}
   if(p==='notifications')renderNotifications();
 }
@@ -693,6 +720,25 @@ function renderExploreSuggestions(){
   const el=document.getElementById('explore-suggest-list');if(!el)return;
   const items=getSuggestionCandidates(6);
   el.innerHTML=items.length?items.map(suggestListItemHTML).join(''):'<div class="muted small" style="padding:6px 0 4px">No suggestions right now — you\'re following everyone! ✦</div>';
+}
+// Full directory of every signed-up user (not just algorithmic suggestions) —
+// so a brand-new account can immediately see, follow, and message everyone.
+function renderAllMembers(){
+  const el=document.getElementById('all-members-list');const countEl=document.getElementById('all-members-count');
+  if(!el)return;
+  const all=Object.values(DB.users).filter(u=>u.username!==currentUser?.username).sort((a,b)=>a.username.localeCompare(b.username));
+  if(countEl)countEl.textContent=`(${all.length})`;
+  el.innerHTML=all.length?all.map(u=>{
+    const st=followStatus(u.username);
+    return`<div class="suggest-list-item">
+      <div class="avatar av44" style="background:${u.color}">${getInitials(u.username)}</div>
+      <div class="meta"><div class="name" onclick="viewUserProfile('${u.username}')">@${u.username}${u.isPrivate?' 🔒':''}</div><div class="reason">${u.followers?.length||0} followers · joined ${timeAgo(u.createdAt||Date.now())}</div></div>
+      <div class="suggest-list-btns">
+        <button class="${followBtnClass(st)} btn-sm fbtn-${cssId(u.username)}" onclick="followUser('${u.username}')">${followBtnLabel(st)}</button>
+        <button class="btn-ghost btn-sm" onclick="startDM('${u.username}')">💬</button>
+      </div>
+    </div>`;
+  }).join(''):'<div class="muted small">No other members yet — invite some friends!</div>';
 }
 function renderDMSuggestions(){
   const wrap=document.getElementById('dm-suggest-wrap');if(!wrap)return;
@@ -923,7 +969,7 @@ function followUser(username){
   }
   currentUser.following=me.following;saveDB();
   refreshFollowUI(username);
-  renderHomeSuggestions();renderExploreSuggestions();renderDMSuggestions();
+  renderHomeSuggestions();renderExploreSuggestions();renderDMSuggestions();renderAllMembers();
 }
 function refreshFollowUI(username){
   document.querySelectorAll(`.fbtn-${cssId(username)}`).forEach(btn=>{
