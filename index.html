@@ -425,7 +425,7 @@ function timeAgo(ts){const d=(Date.now()-ts)/1000;if(d<60)return'just now';if(d<
 function checkNGLParam(){
   const p=new URLSearchParams(window.location.search);
   const nglUser=p.get('ngl');
-  if(!nglUser)return;
+  if(!nglUser)return false;
   document.getElementById('ngl-public-screen').classList.add('show');
   document.getElementById('auth-screen').style.display='none';
   const u=DB.users[nglUser];
@@ -433,6 +433,7 @@ function checkNGLParam(){
   if(u){av.style.background=u.color;av.textContent=getInitials(u.username);}
   document.getElementById('ngl-pub-name').textContent=u?`@${u.username}`:`@${nglUser}`;
   document.getElementById('ngl-public-screen').dataset.target=nglUser;
+  return true;
 }
 function submitPublicNGL(){
   const txt=document.getElementById('ngl-pub-input').value.trim();
@@ -461,9 +462,28 @@ async function initApp(){
   DB.stories.forEach(s=>{if(!s.likes)s.likes=[];if(!s.viewers)s.viewers=[];});
   Object.values(DB.users).forEach(u=>{if(!u.followRequests)u.followRequests=[];if(typeof u.isPrivate!=='boolean')u.isPrivate=false;if(!u.followers)u.followers=[];if(!u.following)u.following=[];});
   saveDB();
-  checkNGLParam();
+  const nglActive=checkNGLParam();
   if(HAS_FIREBASE)startFirebaseSync();
   else if(HAS_SHARED_STORAGE)startPollingSync();
+  if(!nglActive)restoreSession();
+}
+function saveSession(){
+  try{localStorage.setItem('araverse_session',JSON.stringify({username:currentUser?.username,isOwner}))}catch(e){}
+}
+function clearSession(){
+  try{localStorage.removeItem('araverse_session')}catch(e){}
+}
+function restoreSession(){
+  let sess=null;
+  try{const raw=localStorage.getItem('araverse_session');if(raw)sess=JSON.parse(raw)}catch(e){}
+  if(!sess||!sess.username)return;
+  if(sess.isOwner){
+    isOwner=true;currentUser={username:OWNER_USERNAME,color:'#7c3aed'};bootApp();goPage('owner');
+  }else if(DB.users[sess.username]){
+    isOwner=false;currentUser=DB.users[sess.username];bootApp();goPage('home');
+  }else{
+    clearSession(); // account no longer exists
+  }
 }
 function reRenderVisible(){
   buildBottomNav();
@@ -517,16 +537,16 @@ function doSignup(){
 function doLogin(){
   const ui=document.getElementById('login-user').value.trim().toLowerCase();
   const p=document.getElementById('login-pass').value;
-  if((ui===OWNER_USERNAME)&&p===OWNER_PASSWORD){isOwner=true;currentUser={username:OWNER_USERNAME,color:'#7c3aed'};bootApp();goPage('owner');return;}
+  if((ui===OWNER_USERNAME)&&p===OWNER_PASSWORD){isOwner=true;currentUser={username:OWNER_USERNAME,color:'#7c3aed'};saveSession();bootApp();goPage('owner');return;}
   const user=DB.users[ui];
   if(!user||user.password!==p){toast('Wrong credentials');return}
   currentUser=user;isOwner=false;
   DB.loginNotifs.push({username:user.username,action:'logged in',time:Date.now(),type:'login'});
-  saveDB();bootApp();goPage('home');
+  saveDB();saveSession();bootApp();goPage('home');
 }
 function ownerLoginPrompt(e){e.preventDefault();openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title gradient-text">Owner Login ✦</div><div class="form-group"><label class="form-label">Username</label><input id="ow-u" type="text" /></div><div class="form-group"><label class="form-label">Password</label><input id="ow-p" type="password" onkeydown="if(event.key==='Enter')ownerSubmit()" /></div><button class="btn-primary" style="width:100%" onclick="ownerSubmit()">Enter</button>`);}
-function ownerSubmit(){const u=document.getElementById('ow-u')?.value.trim(),p=document.getElementById('ow-p')?.value;if(u===OWNER_USERNAME&&p===OWNER_PASSWORD){isOwner=true;currentUser={username:OWNER_USERNAME,color:'#7c3aed'};closeModal();bootApp();goPage('owner');}else toast('Wrong credentials');}
-function doLogout(){currentUser=null;isOwner=false;currentDMWith=null;document.getElementById('auth-screen').style.display='flex';document.getElementById('main-app').classList.add('hide');}
+function ownerSubmit(){const u=document.getElementById('ow-u')?.value.trim(),p=document.getElementById('ow-p')?.value;if(u===OWNER_USERNAME&&p===OWNER_PASSWORD){isOwner=true;currentUser={username:OWNER_USERNAME,color:'#7c3aed'};saveSession();closeModal();bootApp();goPage('owner');}else toast('Wrong credentials');}
+function doLogout(){clearSession();currentUser=null;isOwner=false;currentDMWith=null;document.getElementById('auth-screen').style.display='flex';document.getElementById('main-app').classList.add('hide');}
 function bootApp(){
   document.getElementById('auth-screen').style.display='none';document.getElementById('main-app').classList.remove('hide');
   const av=document.getElementById('nav-av');av.style.background=currentUser.color;av.textContent=getInitials(currentUser.username);
