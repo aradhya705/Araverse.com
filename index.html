@@ -515,6 +515,15 @@ function startLocalStorageSync(){
     if(currentUser&&!isOwner)currentUser=DB.users[currentUser.username]||currentUser;
     reRenderVisible();
   });
+  window.addEventListener('focus',()=>{
+    if(!currentUser)return;
+    try{
+      const raw=localStorage.getItem('araverse_db');if(!raw)return;
+      DB=JSON.parse(raw);
+      if(!isOwner)currentUser=DB.users[currentUser.username]||currentUser;
+      reRenderVisible();
+    }catch(e){}
+  });
   setInterval(()=>{
     if(!currentUser)return;
     try{
@@ -524,7 +533,7 @@ function startLocalStorageSync(){
       if(!isOwner)currentUser=DB.users[currentUser.username]||currentUser;
       reRenderVisible();
     }catch(e){}
-  },3000);
+  },1500);
 }
 function saveSession(){
   try{localStorage.setItem('araverse_session',JSON.stringify({username:currentUser?.username,isOwner}))}catch(e){}
