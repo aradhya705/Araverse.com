@@ -257,9 +257,8 @@ button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-siz
         <div class="ngl-link-box" id="my-ngl-link" onclick="copyNGLLink()">Tap to copy your link</div>
         <div class="muted small mb8" style="text-align:center">⬆ This link actually works! Share it on WhatsApp, Instagram, anywhere.</div>
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-          <button class="btn-primary" style="flex:1" onclick="postNGLToFeed()">📤 Post to Feed</button>
-          <button class="btn-ghost" style="flex:1" onclick="copyNGLLink()">📋 Copy</button>
-          <button class="btn-ghost" style="flex:1" onclick="shareToStory()">✨ To Story</button>
+          <button class="btn-primary" style="flex:1" onclick="copyNGLLink()">📋 Copy Link</button>
+          <button class="btn-ghost" style="flex:1" onclick="shareToStory()">✨ Share to Story</button>
         </div>
       </div>
       <div style="font-size:15px;font-weight:700;margin-bottom:10px">Anonymous Questions for You</div>
@@ -564,7 +563,7 @@ function goPage(p){
 }
 
 // ===== FEED =====
-function renderFeed(){renderStoryBar();const el=document.getElementById('home-posts');const posts=[...DB.posts].sort((a,b)=>b.ts-a.ts);el.innerHTML=posts.length?posts.map(p=>postHTML(p)).join(''):'<div class="card text-center muted" style="padding:40px">Nothing yet ✦</div>';}
+function renderFeed(){renderStoryBar();const el=document.getElementById('home-posts');const posts=[...DB.posts].filter(p=>!p.nglQuestion&&!p.nglLink).sort((a,b)=>b.ts-a.ts);el.innerHTML=posts.length?posts.map(p=>postHTML(p)).join(''):'<div class="card text-center muted" style="padding:40px">Nothing yet ✦</div>';}
 
 // Get pending NGL questions for a post (posts with nglLink belong to the post author — show them their inbox)
 function getPendingNGLForPost(postUsername){
@@ -614,8 +613,7 @@ function answerNGLFromPost(id){
   const q=(DB.ngls||[]).find(n=>n.id===id);if(!q)return;
   const ans=document.getElementById('ansp-'+id)?.value.trim();
   if(!ans){toast('Write a reply');return}
-  DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body:ans,ts:Date.now(),likes:[],comments:[],type:'text',nglQuestion:q.question});
-  q.answered=true;addReplyToStory(q.question,ans);saveDB();toast('Replied & shared to story! ✦');renderFeed();renderStoryBar();
+  q.answered=true;addReplyToStory(q.question,ans);saveDB();toast('Replied — shared to your story! ✦');renderFeed();renderStoryBar();
 }
 
 function deletePost(id){DB.posts=DB.posts.filter(p=>p.id!==id);saveDB();renderFeed();toast('Deleted');}
@@ -714,14 +712,14 @@ function closeStory(){document.getElementById('story-viewer').classList.add('hid
 function getNGLLink(){const base=window.location.href.split('?')[0];return`${base}?ngl=${currentUser?.username}`;}
 function updateNGLLink(){if(!currentUser||isOwner)return;document.getElementById('my-ngl-link').textContent=getNGLLink();}
 function copyNGLLink(){navigator.clipboard?.writeText(getNGLLink()).catch(()=>{});toast('NGL link copied! 🔗 Share anywhere!');}
-function postNGLToFeed(){const link=getNGLLink();DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body:'Ask me anything anonymously! 💬',ts:Date.now(),likes:[],comments:[],type:'text',nglLink:link});saveDB();toast('Posted to feed!');if(!document.getElementById('page-home').classList.contains('hide'))renderFeed();}
+
 function renderNGLPage(){
   const qs=(DB.ngls||[]).filter(n=>n.toUser===currentUser?.username);
   const el=document.getElementById('ngl-questions');
   if(!qs.length){el.innerHTML='<div class="card text-center muted" style="padding:30px">No questions yet!<br>Copy your link and share it on WhatsApp, Instagram, anywhere. People can ask you anonymously. ✦</div>';return}
   el.innerHTML=[...qs].reverse().map(q=>`<div class="ngl-q-item"><div class="pill pill-purple mb8">💬 Anonymous</div><div style="font-size:15px;margin-bottom:10px">${q.question}</div><div class="muted small mb8">${timeAgo(q.ts)}</div>${q.answered?`<div class="pill pill-green">✓ Replied</div>`:`<div style="display:flex;gap:8px"><input id="ans-${q.id}" placeholder="Answer publicly..." style="flex:1;font-size:13px"><button class="btn-primary btn-sm" onclick="answerNGL('${q.id}')">Reply</button></div>`}</div>`).join('');
 }
-function answerNGL(id){const q=(DB.ngls||[]).find(n=>n.id===id);if(!q)return;const ans=document.getElementById('ans-'+id)?.value.trim();if(!ans){toast('Write a reply');return}DB.posts.unshift({id:'p'+Date.now(),username:currentUser.username,body:ans,ts:Date.now(),likes:[],comments:[],type:'text',nglQuestion:q.question});q.answered=true;addReplyToStory(q.question,ans);saveDB();toast('Replied & shared to story! ✦');renderNGLPage();renderStoryBar();}
+function answerNGL(id){const q=(DB.ngls||[]).find(n=>n.id===id);if(!q)return;const ans=document.getElementById('ans-'+id)?.value.trim();if(!ans){toast('Write a reply');return}q.answered=true;addReplyToStory(q.question,ans);saveDB();toast('Replied — shared to your story! ✦');renderNGLPage();renderStoryBar();}
 function addReplyToStory(question,answer){
   if(!DB.stories)DB.stories=[];
   DB.stories.push({id:'s'+Date.now(),username:currentUser.username,text:`💬 Anonymous asked: "${question}"\n\n${answer}`,bg:'linear-gradient(135deg,#1a0a3a,#4a1280)',ts:Date.now(),likes:[],viewers:[]});
@@ -731,7 +729,7 @@ function submitNGLQ(toUser){const txt=document.getElementById('ngl-ask-txt')?.va
 function sendOwnerNGL(){const txt=document.getElementById('owner-ngl-input').value.trim();if(!txt){toast('Write first');return}if(!DB.ownerNGLs)DB.ownerNGLs=[];DB.ownerNGLs.push({id:'ongl'+Date.now(),fromUser:currentUser?.username||'anonymous',question:txt,ts:Date.now()});saveDB();document.getElementById('owner-ngl-input').value='';toast('Sent anonymously! 💬');}
 
 // ===== EXPLORE =====
-function renderExplore(){const posts=[...DB.posts].sort((a,b)=>(b.likes?.length||0)-(a.likes?.length||0)).slice(0,20);document.getElementById('explore-posts').innerHTML=posts.length?posts.map(p=>postHTML(p)).join(''):'<div class="card text-center muted" style="padding:30px">Nothing yet</div>';}
+function renderExplore(){const posts=[...DB.posts].filter(p=>!p.nglQuestion&&!p.nglLink).sort((a,b)=>(b.likes?.length||0)-(a.likes?.length||0)).slice(0,20);document.getElementById('explore-posts').innerHTML=posts.length?posts.map(p=>postHTML(p)).join(''):'<div class="card text-center muted" style="padding:30px">Nothing yet</div>';}
 function searchUsers(q){
   const el=document.getElementById('search-results');if(!q.trim()){el.innerHTML='';return}
   const users=Object.values(DB.users).filter(u=>u.username.toLowerCase().includes(q.toLowerCase())&&u.username!==currentUser?.username);
@@ -830,14 +828,14 @@ function renderProfile(){
   document.getElementById('prof-av').style.background=currentUser.color;document.getElementById('prof-av').textContent=getInitials(currentUser.username);
   document.getElementById('prof-name').textContent='@'+currentUser.username;document.getElementById('prof-email').textContent=currentUser.email||'';
   document.getElementById('prof-followers').textContent=u?.followers?.length||0;document.getElementById('prof-following').textContent=u?.following?.length||0;
-  const myPosts=DB.posts.filter(p=>p.username===currentUser.username);document.getElementById('prof-posts').textContent=myPosts.length;
+  const myPosts=DB.posts.filter(p=>p.username===currentUser.username&&!p.nglQuestion&&!p.nglLink);document.getElementById('prof-posts').textContent=myPosts.length;
   document.getElementById('my-posts').innerHTML=myPosts.length?myPosts.map(p=>postHTML(p)).join(''):'<div class="muted text-center" style="padding:30px">No posts yet.</div>';
   const pb=document.getElementById('prof-privacy-btn');if(pb)pb.textContent=u?.isPrivate?'🔒 Private':'🌐 Public';
   renderFollowRequests();
 }
 function switchProfileTab(tab){
   ['posts','reels','photos'].forEach(t=>{const btn=document.getElementById('ptab-'+t);if(btn){btn.style.borderBottomColor=t===tab?'#a855f7':'transparent';btn.style.color=t===tab?'var(--text)':'var(--muted)';}});
-  const myPosts=DB.posts.filter(p=>{if(p.username!==currentUser?.username)return false;if(tab==='reels')return p.type==='reel';if(tab==='photos')return p.type==='photo';return true;});
+  const myPosts=DB.posts.filter(p=>{if(p.username!==currentUser?.username||p.nglQuestion||p.nglLink)return false;if(tab==='reels')return p.type==='reel';if(tab==='photos')return p.type==='photo';return true;});
   document.getElementById('my-posts').innerHTML=myPosts.length?myPosts.map(p=>postHTML(p)).join(''):`<div class="muted text-center" style="padding:30px">No ${tab} yet.</div>`;
 }
 function showFollowModal(type){
@@ -850,7 +848,7 @@ function viewUserProfile(username){
   const u=DB.users[username];if(!u)return;
   const st=followStatus(username);
   const canSeePosts=!u.isPrivate||st==='following';
-  const userPosts=canSeePosts?DB.posts.filter(p=>p.username===username):[];
+  const userPosts=canSeePosts?DB.posts.filter(p=>p.username===username&&!p.nglQuestion&&!p.nglLink):[];
   const lockedMsg=`<div class="card text-center" style="padding:30px"><div style="font-size:32px;margin-bottom:8px">🔒</div><div class="bold mb4">This account is private</div><div class="muted small">Follow @${username} to see their posts</div></div>`;
   openModal(`<button class="modal-close" onclick="closeModal()">×</button><div style="text-align:center;padding:16px 0"><div class="avatar av80" style="background:${u.color};margin:0 auto 12px">${getInitials(u.username)}</div><div style="font-size:20px;font-weight:700">@${u.username}${u.isPrivate?' 🔒':''}</div><div style="display:flex;justify-content:center;gap:24px;margin:16px 0"><div class="text-center"><div class="stat-num">${u.isPrivate&&st!=='following'?'-':userPosts.length}</div><div class="stat-label">Posts</div></div><div class="text-center"><div class="stat-num">${u.followers?.length||0}</div><div class="stat-label">Followers</div></div><div class="text-center"><div class="stat-num">${u.following?.length||0}</div><div class="stat-label">Following</div></div></div><div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px"><button class="${followBtnClass(st)} btn-sm fbtn-${cssId(username)}" onclick="followUser('${username}')">${followBtnLabel(st)}</button><button class="btn-ghost btn-sm" onclick="sendNGLQuestion('${username}')">Ask 💬</button><button class="btn-ghost btn-sm" onclick="startDM('${username}');closeModal()">Message</button></div></div><div style="font-weight:700;margin-bottom:10px">Posts</div><div>${canSeePosts?(userPosts.slice(0,3).map(p=>postHTML(p)).join('')||'<div class="muted small">No posts</div>'):lockedMsg}</div>`);
 }
