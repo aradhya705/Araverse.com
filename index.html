@@ -170,6 +170,27 @@ button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-siz
   letter-spacing:.2px;
 }
 .post-btn-big:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,58,237,.5)}
+
+/* SUGGESTIONS — "People you may know" / Connect & Message */
+.suggest-section{padding:0 12px 14px}
+.suggest-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.suggest-section-title{font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px}
+.suggest-see-all{background:none;border:none;color:#a855f7;font-size:12px;font-weight:700;cursor:pointer;padding:0}
+.suggest-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.suggest-row::-webkit-scrollbar{display:none}
+.suggest-card{flex-shrink:0;width:148px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.suggest-card .avatar{margin:0 auto}
+.suggest-name{font-weight:700;font-size:13px;cursor:pointer;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.suggest-reason{font-size:11px;color:var(--muted);min-height:14px}
+.suggest-card-btns{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:4px}
+.suggest-card-btns button{width:100%;padding:7px 10px;font-size:12px}
+.suggest-list-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:var(--card2);margin-bottom:8px}
+.suggest-list-item .meta{flex:1;min-width:0}
+.suggest-list-item .meta .name{font-weight:700;font-size:14px;cursor:pointer}
+.suggest-list-item .meta .reason{font-size:12px;color:var(--muted)}
+.suggest-list-btns{display:flex;gap:6px;flex-shrink:0}
+.suggest-dismiss{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.06);border:none;color:var(--muted);width:20px;height:20px;border-radius:50%;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.suggest-card{position:relative}
 </style>
 </head>
 <body>
@@ -236,6 +257,14 @@ button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-siz
           <button class="btn-primary" style="width:100%" onclick="sendOwnerNGL()">Send Anonymously 💬</button>
         </div>
       </div>
+      <!-- SUGGESTED CONNECTIONS -->
+      <div class="suggest-section">
+        <div class="suggest-section-header">
+          <div class="suggest-section-title">✦ Suggested for You</div>
+          <button class="suggest-see-all" onclick="openAllSuggestions()">See All</button>
+        </div>
+        <div id="home-suggest-row" class="suggest-row"></div>
+      </div>
       <div style="padding:0 12px 10px;display:flex;align-items:center;justify-content:space-between">
         <span style="font-weight:700;font-size:15px">Feed</span>
         <button class="post-btn-big" onclick="openPostCompose()">✦ New Post</button>
@@ -246,6 +275,8 @@ button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-siz
     <div id="page-explore" class="hide" style="padding:12px">
       <input id="search-input" type="text" placeholder="Search users..." oninput="searchUsers(this.value)" style="margin-bottom:14px" />
       <div id="search-results" class="mb16"></div>
+      <div style="font-weight:700;margin-bottom:10px">People You May Know</div>
+      <div id="explore-suggest-list" class="mb20"></div>
       <div style="font-weight:700;margin-bottom:10px">Trending Posts</div>
       <div id="explore-posts"></div>
     </div>
@@ -268,6 +299,7 @@ button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-siz
     <div id="page-messages" class="hide">
       <div id="dm-list-view" style="padding:12px">
         <div style="font-weight:700;font-size:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">Messages <button class="btn-primary btn-sm" onclick="openNewDM()">+ New</button></div>
+        <div id="dm-suggest-wrap" class="mb16"></div>
         <div id="dm-conversations"></div>
       </div>
       <div id="dm-chat-view" class="hide" style="display:flex;flex-direction:column;height:calc(100vh - 136px)">
@@ -460,7 +492,7 @@ async function initApp(){
   if(!DB.notifications)DB.notifications={};
   if(!DB.posts)DB.posts=[];if(!DB.stories)DB.stories=[];if(!DB.ngls)DB.ngls=[];if(!DB.loginNotifs)DB.loginNotifs=[];
   DB.stories.forEach(s=>{if(!s.likes)s.likes=[];if(!s.viewers)s.viewers=[];});
-  Object.values(DB.users).forEach(u=>{if(!u.followRequests)u.followRequests=[];if(typeof u.isPrivate!=='boolean')u.isPrivate=false;if(!u.followers)u.followers=[];if(!u.following)u.following=[];});
+  Object.values(DB.users).forEach(u=>{if(!u.followRequests)u.followRequests=[];if(typeof u.isPrivate!=='boolean')u.isPrivate=false;if(!u.followers)u.followers=[];if(!u.following)u.following=[];if(!u.dismissedSuggestions)u.dismissedSuggestions=[];});
   saveDB();
   const nglActive=checkNGLParam();
   if(HAS_FIREBASE)startFirebaseSync();
@@ -488,11 +520,11 @@ function restoreSession(){
 function reRenderVisible(){
   buildBottomNav();
   const visible=id=>!document.getElementById(id)?.classList.contains('hide');
-  if(visible('page-home'))renderFeed();
+  if(visible('page-home')){renderFeed();renderHomeSuggestions();}
   if(visible('page-notifications'))renderNotifications();
-  if(visible('page-messages')){renderDMList();if(currentDMWith)renderChatMessages(currentDMWith);}
+  if(visible('page-messages')){renderDMList();renderDMSuggestions();if(currentDMWith)renderChatMessages(currentDMWith);}
   if(visible('page-profile'))renderProfile();
-  if(visible('page-explore')&&document.getElementById('search-input')?.value)searchUsers(document.getElementById('search-input').value);
+  if(visible('page-explore')){renderExploreSuggestions();if(document.getElementById('search-input')?.value)searchUsers(document.getElementById('search-input').value);}
 }
 function startFirebaseSync(){
   fbDB.ref('araverse_db').on('value',snap=>{
@@ -529,7 +561,7 @@ function doSignup(){
   if(!u||!p){toast('Fill all fields');return}
   if(u===OWNER_USERNAME){toast('Reserved username');return}
   if(DB.users[u]){toast('Username taken');return}
-  DB.users[u]={username:u,password:p,color:randColor(),followers:[],following:[],followRequests:[],isPrivate:false,createdAt:Date.now()};
+  DB.users[u]={username:u,password:p,color:randColor(),followers:[],following:[],followRequests:[],isPrivate:false,dismissedSuggestions:[],createdAt:Date.now()};
   DB.loginNotifs.push({username:u,action:'just signed up',time:Date.now(),type:'signup'});
   saveDB();toast('Account created! Sign in ✦');switchTab('login');
   document.getElementById('login-user').value=u;document.getElementById('login-pass').value='';
@@ -550,7 +582,7 @@ function doLogout(){clearSession();currentUser=null;isOwner=false;currentDMWith=
 function bootApp(){
   document.getElementById('auth-screen').style.display='none';document.getElementById('main-app').classList.remove('hide');
   const av=document.getElementById('nav-av');av.style.background=currentUser.color;av.textContent=getInitials(currentUser.username);
-  buildBottomNav();renderStoryBar();updateNGLLink();if(!isOwner)renderFeed();
+  buildBottomNav();renderStoryBar();updateNGLLink();if(!isOwner){renderFeed();renderHomeSuggestions();}
 }
 
 function getUnreadCount(){
@@ -579,7 +611,98 @@ function goPage(p){
   const idx=pages.indexOf(p);const btns=document.querySelectorAll('.bnav-item');
   if(idx>=0&&btns[idx])btns[idx].classList.add('active');
   if(p==='profile')renderProfile();if(p==='ngl'){renderNGLPage();updateNGLLink();}
-  if(p==='home')renderFeed();if(p==='owner')renderOwner();if(p==='explore')renderExplore();if(p==='messages')renderDMList();if(p==='notifications')renderNotifications();
+  if(p==='home'){renderFeed();renderHomeSuggestions();}
+  if(p==='owner')renderOwner();
+  if(p==='explore'){renderExplore();renderExploreSuggestions();}
+  if(p==='messages'){renderDMList();renderDMSuggestions();}
+  if(p==='notifications')renderNotifications();
+}
+
+// ===== SUGGESTIONS ("People you may know" — connect & message, Instagram-style) =====
+// Scores candidates by: mutual followers (highest), then account recency, then random variety.
+function getSuggestionCandidates(limit){
+  if(!currentUser||isOwner)return[];
+  const me=DB.users[currentUser.username];if(!me)return[];
+  const dismissed=me.dismissedSuggestions||[];
+  const myFollowing=new Set(me.following||[]);
+  const candidates=Object.values(DB.users).filter(u=>
+    u.username!==currentUser.username &&
+    !myFollowing.has(u.username) &&
+    !dismissed.includes(u.username)
+  );
+  const scored=candidates.map(u=>{
+    const theirFollowers=new Set(u.followers||[]);
+    let mutuals=0;
+    myFollowing.forEach(f=>{if((DB.users[f]?.followers||[]).includes(u.username)||theirFollowers.has(f))mutuals++;});
+    // mutual = people I follow who also follow this candidate, or who this candidate follows
+    let mutualCount=0;
+    (me.following||[]).forEach(fUsername=>{
+      const fUser=DB.users[fUsername];
+      if(fUser && (fUser.following||[]).includes(u.username)) mutualCount++;
+    });
+    const reasons=[];
+    if(mutualCount>0)reasons.push(`Followed by ${mutualCount} ${mutualCount===1?'person':'people'} you follow`);
+    else if((u.followers||[]).length>3)reasons.push(`${u.followers.length} followers`);
+    else reasons.push('New on AraVerse ✦');
+    return{u,mutualCount,score:mutualCount*10+(u.followers?.length||0)+Math.random(),reason:reasons[0]};
+  });
+  scored.sort((a,b)=>b.score-a.score);
+  return limit?scored.slice(0,limit):scored;
+}
+function suggestCardHTML(item){
+  const u=item.u;const st=followStatus(u.username);
+  return`<div class="suggest-card">
+    <button class="suggest-dismiss" onclick="dismissSuggestion('${u.username}',event)" title="Dismiss">×</button>
+    <div class="avatar av44" style="background:${u.color}">${getInitials(u.username)}</div>
+    <div class="suggest-name" onclick="viewUserProfile('${u.username}')">@${u.username}</div>
+    <div class="suggest-reason">${item.reason}</div>
+    <div class="suggest-card-btns">
+      <button class="${followBtnClass(st)} btn-sm fbtn-${cssId(u.username)}" onclick="followUser('${u.username}')">${followBtnLabel(st)}</button>
+      <button class="btn-ghost btn-sm" onclick="startDM('${u.username}')">💬 Message</button>
+    </div>
+  </div>`;
+}
+function suggestListItemHTML(item){
+  const u=item.u;const st=followStatus(u.username);
+  return`<div class="suggest-list-item">
+    <div class="avatar av44" style="background:${u.color}">${getInitials(u.username)}</div>
+    <div class="meta"><div class="name" onclick="viewUserProfile('${u.username}')">@${u.username}</div><div class="reason">${item.reason}</div></div>
+    <div class="suggest-list-btns">
+      <button class="${followBtnClass(st)} btn-sm fbtn-${cssId(u.username)}" onclick="followUser('${u.username}')">${followBtnLabel(st)}</button>
+      <button class="btn-ghost btn-sm" onclick="startDM('${u.username}')">💬</button>
+    </div>
+  </div>`;
+}
+function dismissSuggestion(username,e){
+  if(e)e.stopPropagation();
+  const me=DB.users[currentUser.username];if(!me)return;
+  if(!me.dismissedSuggestions)me.dismissedSuggestions=[];
+  if(!me.dismissedSuggestions.includes(username))me.dismissedSuggestions.push(username);
+  saveDB();toast('Suggestion removed');
+  renderHomeSuggestions();renderExploreSuggestions();renderDMSuggestions();
+}
+function renderHomeSuggestions(){
+  const row=document.getElementById('home-suggest-row');if(!row)return;
+  const items=getSuggestionCandidates(8);
+  const section=row.closest('.suggest-section');
+  if(!items.length){if(section)section.classList.add('hide');row.innerHTML='';return}
+  if(section)section.classList.remove('hide');
+  row.innerHTML=items.map(suggestCardHTML).join('');
+}
+function renderExploreSuggestions(){
+  const el=document.getElementById('explore-suggest-list');if(!el)return;
+  const items=getSuggestionCandidates(6);
+  el.innerHTML=items.length?items.map(suggestListItemHTML).join(''):'<div class="muted small" style="padding:6px 0 4px">No suggestions right now — you\'re following everyone! ✦</div>';
+}
+function renderDMSuggestions(){
+  const wrap=document.getElementById('dm-suggest-wrap');if(!wrap)return;
+  const items=getSuggestionCandidates(6);
+  if(!items.length){wrap.innerHTML='';return}
+  wrap.innerHTML=`<div class="muted small mb8" style="font-weight:700;letter-spacing:.3px">CONNECT & CHAT</div><div class="suggest-row">${items.map(suggestCardHTML).join('')}</div>`;
+}
+function openAllSuggestions(){
+  const items=getSuggestionCandidates();
+  openModal(`<button class="modal-close" onclick="closeModal()">×</button><div class="modal-title">✦ Suggested for You</div><div id="all-suggest-list">${items.length?items.map(suggestListItemHTML).join(''):'<div class="muted small">No suggestions right now</div>'}</div>`);
 }
 
 // ===== FEED =====
@@ -796,10 +919,11 @@ function followUser(username){
     me.following.push(username);them.followers.push(currentUser.username);
     const isMutual=them.following?.includes(currentUser.username);
     addNotification(username,'follow',currentUser.username);
-    toast(isMutual?`You and @${username} now follow each other! 🤝`:'Following! ✦');
+    toast(isMutual?`You and @${username} now follow each other! 🤝 Say hi via DM`:'Following! ✦');
   }
   currentUser.following=me.following;saveDB();
   refreshFollowUI(username);
+  renderHomeSuggestions();renderExploreSuggestions();renderDMSuggestions();
 }
 function refreshFollowUI(username){
   document.querySelectorAll(`.fbtn-${cssId(username)}`).forEach(btn=>{
@@ -880,7 +1004,7 @@ function renderDMList(){
   const convs=new Set();
   Object.keys(DB.dms||{}).forEach(k=>{if(k.includes(currentUser.username))k.split('__').filter(u=>u!==currentUser.username).forEach(u=>convs.add(u));});
   const el=document.getElementById('dm-conversations');
-  if(!convs.size){el.innerHTML='<div class="muted small" style="padding:20px 0">No messages yet. Find people in Explore and tap 💬 to chat!</div>';return}
+  if(!convs.size){el.innerHTML='<div class="muted small" style="padding:20px 0">No messages yet. Try one of the suggestions above, or find people in Explore and tap 💬 to chat!</div>';return}
   el.innerHTML=[...convs].map(username=>{
     const u=DB.users[username]||{color:'#6366f1'};const k=getDMKey(currentUser.username,username);const msgs=(DB.dms[k]||[]);const last=msgs[msgs.length-1];const unread=msgs.filter(m=>m.to===currentUser.username&&!m.read).length;
     return`<div class="dm-item${unread?' active':''}" onclick="openDMChat('${username}')"><div class="avatar av44" style="background:${u.color}">${getInitials(username)}</div><div style="flex:1"><div style="font-weight:700">@${username}</div><div class="muted small" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px">${last?last.text:'Start chatting!'}</div></div>${unread?`<div style="width:8px;height:8px;background:#ec4899;border-radius:50%;flex-shrink:0"></div>`:''}${last?`<div class="muted" style="font-size:11px;flex-shrink:0">${timeAgo(last.ts)}</div>`:''}</div>`;
@@ -898,7 +1022,7 @@ function openDMChat(username){
   document.getElementById('chat-with-name').textContent='@'+username;
   renderChatMessages(username);buildBottomNav();
 }
-function closeDMChat(){currentDMWith=null;document.getElementById('dm-list-view').classList.remove('hide');const cv=document.getElementById('dm-chat-view');cv.classList.add('hide');cv.style.display='none';renderDMList();buildBottomNav();}
+function closeDMChat(){currentDMWith=null;document.getElementById('dm-list-view').classList.remove('hide');const cv=document.getElementById('dm-chat-view');cv.classList.add('hide');cv.style.display='none';renderDMList();renderDMSuggestions();buildBottomNav();}
 function renderChatMessages(username){
   const k=getDMKey(currentUser.username,username);const msgs=DB.dms[k]||[];
   const el=document.getElementById('chat-messages');
