@@ -361,6 +361,13 @@ button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-siz
         <div class="score-item"><div class="score-num" id="ow-msgs">0</div><div class="score-lbl">NGL Msgs</div></div>
         <div class="score-item"><div class="score-num" id="ow-posts">0</div><div class="score-lbl">Posts</div></div>
       </div>
+      <div class="card mb16" style="background:linear-gradient(135deg,#1a0a3a,#0a1535);border-color:#3a1a5a" id="ow-new-signups-card">
+        <div class="flex ai-center jc-between mb8">
+          <div style="font-weight:700;font-size:15px">🆕 New Signup Alerts</div>
+          <button class="btn-ghost btn-sm" onclick="clearNewSignupAlerts()">Mark all read</button>
+        </div>
+        <div id="ow-new-signups"></div>
+      </div>
       <div style="font-weight:700;margin-bottom:10px;font-size:15px">🔔 User Activity</div>
       <div id="ow-logins" class="mb20"></div>
       <div style="font-weight:700;margin-bottom:10px;font-size:15px">💬 Anonymous Messages to You</div>
@@ -368,6 +375,11 @@ button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;font-siz
       <div id="ow-ngls"></div>
       <div style="font-weight:700;margin-bottom:10px;font-size:15px;margin-top:8px">👥 All Users</div>
       <div id="ow-users-list"></div>
+      <div class="card mb20" style="margin-top:20px;border-color:#7a1240">
+        <div style="font-weight:700;margin-bottom:6px;font-size:15px;color:#f472b6">⚠ Danger Zone</div>
+        <div class="muted small mb12">Wipes ALL users, posts, stories, DMs, NGL messages & notifications. This cannot be undone. Use this to start AraVerse fresh with an empty user list.</div>
+        <button class="btn-ghost btn-sm" style="border-color:#f472b6;color:#f472b6" onclick="resetAllData()">🗑 Reset All Users & Data</button>
+      </div>
     </div>
   </div>
   <div id="bottom-nav"></div>
@@ -425,7 +437,7 @@ try{
 const OWNER_USERNAME='aradhya09',OWNER_PASSWORD='aradhyasrivastava09';
 const HAS_SHARED_STORAGE=(typeof window!=='undefined'&&!!window.storage);
 const HAS_FIREBASE=!!fbDB;
-let DB={users:{},posts:[],ngls:[],ownerNGLs:[],stories:[],loginNotifs:[],dms:{},notifications:{}};
+let DB={users:{},posts:[],ngls:[],ownerNGLs:[],stories:[],loginNotifs:[],dms:{},notifications:{},newSignupAlerts:[]};
 let currentUser=null,isOwner=false,currentDMWith=null,storyTimer=null,currentStoryId=null;
 let suppressNextFbEcho=false;
 
@@ -494,6 +506,7 @@ async function initApp(){
   }
   if(!DB.dms)DB.dms={};
   if(!DB.notifications)DB.notifications={};
+  if(!DB.newSignupAlerts)DB.newSignupAlerts=[];
   if(!DB.posts)DB.posts=[];if(!DB.stories)DB.stories=[];if(!DB.ngls)DB.ngls=[];if(!DB.loginNotifs)DB.loginNotifs=[];
   DB.stories.forEach(s=>{if(!s.likes)s.likes=[];if(!s.viewers)s.viewers=[];});
   Object.values(DB.users).forEach(u=>{if(!u.followRequests)u.followRequests=[];if(typeof u.isPrivate!=='boolean')u.isPrivate=false;if(!u.followers)u.followers=[];if(!u.following)u.following=[];if(!u.dismissedSuggestions)u.dismissedSuggestions=[];});
@@ -515,15 +528,6 @@ function startLocalStorageSync(){
     if(currentUser&&!isOwner)currentUser=DB.users[currentUser.username]||currentUser;
     reRenderVisible();
   });
-  window.addEventListener('focus',()=>{
-    if(!currentUser)return;
-    try{
-      const raw=localStorage.getItem('araverse_db');if(!raw)return;
-      DB=JSON.parse(raw);
-      if(!isOwner)currentUser=DB.users[currentUser.username]||currentUser;
-      reRenderVisible();
-    }catch(e){}
-  });
   setInterval(()=>{
     if(!currentUser)return;
     try{
@@ -533,7 +537,7 @@ function startLocalStorageSync(){
       if(!isOwner)currentUser=DB.users[currentUser.username]||currentUser;
       reRenderVisible();
     }catch(e){}
-  },1500);
+  },3000);
 }
 function saveSession(){
   try{localStorage.setItem('araverse_session',JSON.stringify({username:currentUser?.username,isOwner}))}catch(e){}
@@ -561,6 +565,7 @@ function reRenderVisible(){
   if(visible('page-messages')){renderDMList();renderDMSuggestions();if(currentDMWith)renderChatMessages(currentDMWith);}
   if(visible('page-profile'))renderProfile();
   if(visible('page-explore')){renderExploreSuggestions();renderAllMembers();if(document.getElementById('search-input')?.value)searchUsers(document.getElementById('search-input').value);}
+  if(visible('page-owner'))renderOwner();
 }
 function startFirebaseSync(){
   fbDB.ref('araverse_db').on('value',snap=>{
@@ -599,6 +604,9 @@ function doSignup(){
   if(DB.users[u]){toast('Username taken');return}
   DB.users[u]={username:u,password:p,color:randColor(),followers:[],following:[],followRequests:[],isPrivate:false,dismissedSuggestions:[],createdAt:Date.now()};
   DB.loginNotifs.push({username:u,action:'just signed up',time:Date.now(),type:'signup'});
+  // Explicit owner alert — informs Aradhya every time a brand-new user joins AraVerse
+  if(!DB.newSignupAlerts)DB.newSignupAlerts=[];
+  DB.newSignupAlerts.push({id:'sig'+Date.now(),username:u,ts:Date.now(),read:false});
   saveDB();toast('Account created! Sign in ✦');switchTab('login');
   document.getElementById('login-user').value=u;document.getElementById('login-pass').value='';
 }
@@ -628,7 +636,9 @@ function getUnreadCount(){
 }
 function buildBottomNav(){
   const nav=document.getElementById('bottom-nav'),unread=getUnreadCount();
-  if(isOwner){nav.innerHTML=`<button class="bnav-item active" onclick="goPage('owner')"><i class="ti ti-crown"></i>Dashboard</button><button class="bnav-item" onclick="goPage('home')"><i class="ti ti-home"></i>Feed</button><button class="bnav-item" onclick="goPage('explore')"><i class="ti ti-search"></i>Explore</button>`;return;}
+  if(isOwner){
+    const unreadSignups=(DB.newSignupAlerts||[]).filter(a=>!a.read).length;
+    nav.innerHTML=`<button class="bnav-item active" onclick="goPage('owner')" style="position:relative"><i class="ti ti-crown"></i>${unreadSignups?`<span class="bnav-badge">${unreadSignups}</span>`:''}Dashboard</button><button class="bnav-item" onclick="goPage('home')"><i class="ti ti-home"></i>Feed</button><button class="bnav-item" onclick="goPage('explore')"><i class="ti ti-search"></i>Explore</button>`;return;}
   const unreadNotifs=(DB.notifications?.[currentUser?.username]||[]).filter(n=>!n.read).length;
   nav.innerHTML=`<button class="bnav-item active" onclick="goPage('home')"><i class="ti ti-home"></i>Home</button>
     <button class="bnav-item" onclick="goPage('explore')"><i class="ti ti-search"></i>Explore</button>
@@ -656,6 +666,9 @@ function goPage(p){
 
 // ===== SUGGESTIONS ("People you may know" — connect & message, Instagram-style) =====
 // Scores candidates by: mutual followers (highest), then account recency, then random variety.
+// A brand-new user has no following/dismissed yet, so EVERY existing AraVerse member
+// is automatically surfaced here — this is what lets a fresh signup immediately see
+// and connect with everyone who already joined.
 function getSuggestionCandidates(limit){
   if(!currentUser||isOwner)return[];
   const me=DB.users[currentUser.username];if(!me)return[];
@@ -679,7 +692,7 @@ function getSuggestionCandidates(limit){
     const reasons=[];
     if(mutualCount>0)reasons.push(`Followed by ${mutualCount} ${mutualCount===1?'person':'people'} you follow`);
     else if((u.followers||[]).length>3)reasons.push(`${u.followers.length} followers`);
-    else reasons.push('New on AraVerse ✦');
+    else reasons.push('Already on AraVerse ✦');
     return{u,mutualCount,score:mutualCount*10+(u.followers?.length||0)+Math.random(),reason:reasons[0]};
   });
   scored.sort((a,b)=>b.score-a.score);
@@ -1091,11 +1104,49 @@ function sendDMMessage(toUser,text){if(!DB.dms)DB.dms={};const k=getDMKey(curren
 function renderOwner(){
   if(!isOwner)return;
   document.getElementById('ow-users').textContent=Object.keys(DB.users).length;document.getElementById('ow-msgs').textContent=(DB.ownerNGLs||[]).length;document.getElementById('ow-posts').textContent=DB.posts.length;
+  // New signup alerts — explicitly informs the owner each time someone new joins
+  const signups=[...(DB.newSignupAlerts||[])].reverse();
+  const signupsEl=document.getElementById('ow-new-signups');
+  if(signupsEl){
+    signupsEl.innerHTML=signups.length?signups.map(a=>{
+      const u=DB.users[a.username];
+      return`<div class="card mb8 flex ai-center gap10" style="padding:10px 14px;${a.read?'':'border-color:#a855f7;background:rgba(124,58,237,.1)'}">
+        <div class="avatar av32" style="background:${u?.color||'#7c3aed'}">${getInitials(a.username)}</div>
+        <div style="flex:1"><span style="font-weight:700">@${a.username}</span> <span class="muted">just joined AraVerse ✦</span><div class="muted small">${timeAgo(a.ts)}</div></div>
+        ${a.read?'':'<span class="pill pill-purple">NEW</span>'}
+      </div>`;
+    }).join(''):'<div class="muted small">No new signups yet</div>';
+  }
+  buildBottomNav();
   const logins=[...(DB.loginNotifs||[])].reverse().slice(0,30);
   document.getElementById('ow-logins').innerHTML=logins.length?logins.map(l=>{const u=DB.users[l.username];return`<div class="card mb8 flex ai-center gap10" style="padding:12px 14px"><div class="avatar av32" style="background:${u?.color||'#7c3aed'}">${getInitials(l.username)}</div><div style="flex:1"><span style="font-weight:700">@${l.username}</span><span class="muted"> ${l.action}</span></div><div class="muted small">${timeAgo(l.time)}</div></div>`;}).join(''):'<div class="muted small">No activity</div>';
   const ngls=[...(DB.ownerNGLs||[])].reverse();
   document.getElementById('ow-ngls').innerHTML=ngls.length?ngls.map(n=>`<div class="ngl-q-item"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px"><span class="pill pill-purple">💬 Sent to you</span><span class="pill pill-green">👁 From @${n.fromUser}</span></div><div style="font-size:15px;line-height:1.5">${n.question}</div><div class="muted small" style="margin-top:6px">${timeAgo(n.ts)}</div></div>`).join(''):'<div class="muted small">No messages yet</div>';
   document.getElementById('ow-users-list').innerHTML=Object.values(DB.users).map(u=>`<div class="card mb8 flex ai-center gap10" style="padding:12px 14px"><div class="avatar av32" style="background:${u.color}">${getInitials(u.username)}</div><div style="flex:1"><div style="font-weight:700">@${u.username}</div><div class="muted small">joined ${timeAgo(u.createdAt)}</div></div><div class="muted small">${u.followers?.length||0} followers</div></div>`).join('')||'<div class="muted small">No users</div>';
+}
+function clearNewSignupAlerts(){
+  (DB.newSignupAlerts||[]).forEach(a=>a.read=true);
+  saveDB();renderOwner();toast('Marked all signup alerts as read');
+}
+function resetAllData(){
+  if(!isOwner)return;
+  if(!confirm('This will permanently delete ALL users, posts, stories, DMs, NGL messages and notifications. AraVerse will restart completely empty. Continue?'))return;
+  if(!confirm('Are you absolutely sure? This cannot be undone.'))return;
+  DB={
+    users:{},
+    posts:[],
+    ngls:[],
+    ownerNGLs:[],
+    stories:[],
+    loginNotifs:[],
+    dms:{},
+    notifications:{},
+    newSignupAlerts:[],
+    _seeded:true // prevents demo account from being re-seeded
+  };
+  saveDB();
+  toast('All data wiped — AraVerse is starting fresh! ✦');
+  renderOwner();
 }
 
 // ===== NOTIFICATIONS =====
